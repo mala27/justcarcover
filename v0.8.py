@@ -7,11 +7,6 @@ import pandas as pd
 import os
 import time
 from datetime import datetime
-import smartcar # Add this to your imports at the top!
-
-if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = False
-if "mileage" not in st.session_state: st.session_state.mileage = 0
-
 
 # --- 1) SAAS UI BRANDING & THEME ---
 st.set_page_config(page_title="justcarcover | Broker Portal", layout="wide")
@@ -43,13 +38,15 @@ with col_logo:
     st.image("https://raw.githubusercontent.com/mala27/justcarcover/main/logo.png", width=200) # Increased width to 200
 with col_text:
     st.title("justcarcover | Specialist Broker Portal")
-    st.caption("v0.8 Smart-Price Engine | Address Persistence Active")
+    st.caption("v0.7 Master Engine | Address Persistence Active")
 st.divider()
 
 if "address_options" not in st.session_state:
     st.session_state.address_options = ["Enter postcode to see addresses..."]
 
 # --- 2) IDENTITY & POSTCODE ---
+if "address_options" not in st.session_state:
+    st.session_state.address_options = ["Enter postcode to see addresses..."]
 if "selected_address" not in st.session_state: st.session_state.selected_address = "Enter postcode to see addresses..."
 
 col_a, col_b = st.columns(2)
@@ -110,90 +107,46 @@ if postcode and len(postcode) > 4:
             acc_score = len(crimes) // 20 
     except: pass
 
-
-# --- 5) REAL SMARTCAR CONNECTION (Pillar 3) ---
+# --- 5) 21-DAY TEST DRIVE (Pillar 3) ---
 st.divider()
-st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
+st.subheader("🏁 Phase 1: 21-Day Test Drive Monitoring")
+if "test_drive_active" not in st.session_state: 
+    st.session_state.test_drive_active = False
 
+if st.button("🚀 Start 21-Day Monitoring"):
+    with st.status("Building Motion DNA profile...", expanded=True) as status:
+        time.sleep(1); st.write("📡 Calibrating sensors..."); time.sleep(1)
+        st.write("📵 Monitoring distraction events..."); time.sleep(1)
+        status.update(label="21 Days Complete!", state="complete", expanded=False)
+    st.session_state.test_drive_active = True
 
-# 1. Credentials (Surgically Matched to Urban-Spoon Dashboard)
-SC_URI = "https://javascript.smartcar.com/redirect-2.0.0?origin=https://urban-spoon-ww564pwxqrcgggv-8501.app.github.dev/"
-
-client = smartcar.AuthClient(
-    client_id="zapping-chariot-m59c",
-    client_secret="d3eeac01-9bda-4de1-99fe-405365271b15",
-    redirect_uri=SC_URI,
-    test_mode=True 
-)
-
-
-# 2. The "Connect" Link
-auth_url = client.get_auth_url(["read_odometer", "read_vehicle_info"])
-st.link_button("🔌 Connect Your Real Car", auth_url)
-
-
-# 3. Handling the Callback (Surgical Update: Persistence Fix)
-query_params = st.query_params
-if "code" in query_params and not st.session_state.test_drive_active:
-    try:
-        res = client.exchange_code(query_params["code"])
-        vehicle_ids = smartcar.get_vehicles(res['access_token'])['vehicles']
-        vehicle = smartcar.Vehicle(vehicle_ids[0], res['access_token'])
-        
-        # Real-time data fetch
-        odometer = vehicle.odometer()
-        st.session_state.mileage = odometer['data']['distance']
-        st.session_state.test_drive_active = True
-        st.rerun() # Forces Streamlit to show the new "Underwriting" section immediately
-    except Exception as e:
-        st.error(f"Handshake failed: {e}")
-
-
-# --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) ---
+# --- 6) UNDERWRITING, DISTRACTION & DECLINE (Pillars 4 & 5) ---
 if st.session_state.test_drive_active:
-    st.success(f"✅ Verified Odometer: {st.session_state.mileage:,.0f} miles")
-    st.subheader("📊 Underwriting Decision (v0.8 Smart-Price)")
-    
-    # Auto-calculate the Smart-Price discount immediately
-    mileage_bonus = 10 if 0 < st.session_state.mileage < 5000 else 0
-    st.info(f"Verified Mileage Reward: {mileage_bonus}% Extra Discount applied.")
-
+    st.subheader("📊 Underwriting Decision")
     col1, col2, col3 = st.columns(3)
-    
     braking = col1.slider("Harsh Braking", 0, 20, 2, disabled=True)
     speeding = col2.slider("Speeding Events", 0, 10, 0, disabled=True)
     distraction = col3.slider("Phone Usage", 0, 10, 1, disabled=True)
     
     accidents = st.number_input("Prior Accidents (Last 5 Years)", value=int(acc_score))
     crime_rate_val = st.number_input("Local Vehicle Crime Rate", value=int(v_crimes))
-   
     
     if st.button("⚖️ Review Final Eligibility"):
         total_risk = braking + (speeding * 2) + (distraction * 3)
         
-        # v0.8 Logic: Re-verify bonus inside the button scope
-        mileage_bonus = 10 if 0 < st.session_state.mileage < 5000 else 0
-        perf_discount = max(0, 45 - (total_risk * 3))
-                   
         if total_risk > 12:
             st.error("❌ DECLINED: Profile exceeds specialist risk appetite.")
         else:
-            perf_discount = max(0, 45 - (total_risk * 3))
-            total_discount = perf_discount + mileage_bonus # Combined "Smart" discount
-            
+            discount = max(0, 45 - (total_risk * 3))
             base_price = 500 + (accidents * 150) + (crime_rate_val * 10)
-            final_price = base_price * (1 - (total_discount / 100))
-            
-            st.balloons()
-            st.success(f"✅ ELIGIBILITY CONFIRMED FOR {reg_no}")
-            st.metric(f"Personalised Premium", f"£{final_price:,.2f}", f"-{total_discount}% Verified Discount")
+            final_price = base_price * (1 - (discount / 100))
+            st.balloons(); st.success(f"✅ ELIGIBILITY CONFIRMED FOR {reg_no}")
+            st.metric(f"Personalised Premium", f"£{final_price:,.2f}", f"-{discount}% Performance Discount")
 
-            # Update CSV log
-            df = pd.DataFrame([[f"{f_name} {s_name}", dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
-                               columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Verified_Miles', 'Premium'])
+            df = pd.DataFrame([[f"{f_name} {s_name}", dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, final_price]], 
+                               columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Premium'])
             df.to_csv('quotes.csv', mode='a', index=False, header=not os.path.isfile('quotes.csv'))
 
-   
 # --- 7) HISTORY ---
 if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
     st.markdown("---")
