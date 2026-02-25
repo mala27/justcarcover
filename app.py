@@ -120,7 +120,7 @@ st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
 client = smartcar.AuthClient(
     client_id='d3eeac01-9bda-4de1-99fe-405365271b15',
     client_secret='130adf6f-f153-4d66-9bfe-d9de4ebe0c7b',
-    redirect_uri='https://[https://urban-spoon-ww564pwxqrcgggv.github.dev/]-8501.app.github.dev/exchange',
+    redirect_uri='https://urban-spoon-ww564pwxqrcgggv-8501.app.github.dev/exchange',
     test_mode=True 
 )
  
