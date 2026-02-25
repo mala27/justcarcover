@@ -116,15 +116,14 @@ st.divider()
 st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
 
 
-# 1. Credentials (Surgically Matched to Urban-Spoon Dashboard)
-SC_URI = "https://javascript.smartcar.com/redirect-2.0.0?origin=https://urban-spoon-ww564pwxqrcgggv-8501.app.github.dev/"
-
+# 1. Credentials (Surgically Matched to Urban-Spoon Dashboard, Removed SC_URI & added Security via Environment Variables)
 client = smartcar.AuthClient(
-    client_id="d3eeac01-9bda-4de1-99fe-405365271b15",
-    client_secret="130adf6f-f153-4d66-9bfe-d9de4ebe0c7b",
-    redirect_uri=SC_URI,
+    client_id=os.environ.get('d3eeac01-9bda-4de1-99fe-405365271b15'),
+    client_secret=os.environ.get('130adf6f-f153-4d66-9bfe-d9de4ebe0c7b'),
+    redirect_uri='https://[https://urban-spoon-ww564pwxqrcgggv.github.dev/]-8000.app.github.dev/exchange',
     test_mode=True 
 )
+ 
 
 # Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
