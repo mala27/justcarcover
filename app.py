@@ -139,7 +139,7 @@ code = st.query_params.get("code")
 
 if code and not st.session_state.test_drive_active:
     try:
-        res = client.exchange_code(code)[0]
+        res = client.exchange_code(code)
         vehicle_ids = smartcar.get_vehicles(res['access_token'])['vehicles']
         vehicle = smartcar.Vehicle(vehicle_ids[0], res['access_token'])
         
