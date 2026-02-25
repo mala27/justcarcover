@@ -1,5 +1,5 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
-# Master Version: v0.9 (Surgical Update: Github/Streamlit/Smartcar Connection Other Error Issues Resolved)
+# Master Version: v0.10 (Surgical Updates: Github/Streamlit/Smartcar Connection, Tuples/Strings, Other Error Issues Resolved)
 
 import streamlit as st #Engine powering user interface & enter boxes
 import pandas as pd #Housekeeping tool for organizing/saving quotes in CSV
