@@ -136,10 +136,12 @@ st.link_button("🔌 Connect Your Real Car", auth_url)
 # 3. Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
 
+
 if code and not st.session_state.test_drive_active:
     try:
         res = client.exchange_code(code)
-        vehicle_ids = smartcar.get_vehicles(res.access_token)['vehicles']
+        vehicles_response = smartcar.get_vehicles(res.access_token)
+        vehicle_ids = vehicles_response.vehicles # Using dot notation for NamedTuple
         vehicle = smartcar.Vehicle(vehicle_ids[0], res.access_token)
         
         # Real-time data fetch
