@@ -133,15 +133,14 @@ auth_url = client.get_auth_url(["read_odometer", "read_vehicle_info"])
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 
-
 # 3. Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
 
 if code and not st.session_state.test_drive_active:
     try:
-        res, _ = client.exchange_code(code)
-        vehicle_ids = smartcar.get_vehicles(res['access_token'])['vehicles']
-        vehicle = smartcar.Vehicle(vehicle_ids[0], res['access_token'])
+        res = client.exchange_code(code)
+        vehicle_ids = smartcar.get_vehicles(res.access_token)['vehicles']
+        vehicle = smartcar.Vehicle(vehicle_ids[0], res.access_token)
         
         # Real-time data fetch
         odometer = vehicle.odometer()
