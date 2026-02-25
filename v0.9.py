@@ -110,7 +110,6 @@ if "lat" in st.session_state and "lng" in st.session_state:
     except: pass
 
 
-
 # --- 5) REAL SMARTCAR CONNECTION (Pillar 3) ---
 st.divider()
 st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
@@ -126,8 +125,6 @@ client = smartcar.AuthClient(
     test_mode=True 
 )
 
-# Handling the Callback (Surgical Update: Persistence Fix)
-code = st.query_params.get("code")
 
 # 2. The "Connect" Link
 auth_url = client.get_auth_url(["read_odometer", "read_vehicle_info"])
@@ -149,12 +146,13 @@ if code and not st.session_state.test_drive_active:
         st.session_state.mileage = odometer['data']['distance']
         st.session_state.test_drive_active = True
 
-         # clear query params so we don’t rerun repeatedly
-        st.query_params.clear()
+        # clear query params so we don’t rerun repeatedly
+        st.experimental_set_query_params()
         st.rerun() # Forces Streamlit to show the new "Underwriting" section immediately
     except Exception as e:
         # show full exception for diagnostics
         st.error(f"Handshake failed: {e}")
+        st.write("> Debug: params=", params)
 
 
 # --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) ---
