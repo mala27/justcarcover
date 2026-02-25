@@ -146,7 +146,7 @@ if code and not st.session_state.test_drive_active:
         
         # Real-time data fetch
         odometer = vehicle.odometer()
-        st.session_state.mileage = odometer['data']['distance']
+        st.session_state.mileage = odometer.distance
         st.session_state.test_drive_active = True
 
          # clear query params so we don’t rerun repeatedly
