@@ -6,6 +6,7 @@ import pandas as pd #Housekeeping tool for organizing/saving quotes in CSV
 import os #Manage system paths
 import time #Timestamps for every new quote generated
 from datetime import datetime
+import json #For saving Smartcar credentials securely
 import requests #Talking to external APIs
 import smartcar #Heavy lifting & talking to external APIs & vehicles itself
 
@@ -136,14 +137,16 @@ st.link_button("🔌 Connect Your Real Car", auth_url)
 # 3. Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
 
-
-if code and not st.session_state.test_drive_active:
+if code and not st.session_state.get('test_drive_active'):
     try:
         res = client.exchange_code(code)
+        with open('urban_spoon_creds.json', 'w') as f:
+            json.dump(res.as_dict(), f)  # Correctly indented save
         vehicles_response = smartcar.get_vehicles(res.access_token)
-        vehicle_ids = vehicles_response.vehicles # Using dot notation for NamedTuple
+        vehicle_ids = vehicles_response.vehicles
         vehicle = smartcar.Vehicle(vehicle_ids[0], res.access_token)
-        
+
+
         # Real-time data fetch
         odometer = vehicle.odometer()
         st.session_state.mileage = odometer.distance
