@@ -141,7 +141,7 @@ if code and not st.session_state.get('test_drive_active'):
     try:
         res = client.exchange_code(code)
         with open('urban_spoon_creds.json', 'w') as f:
-            json.dump(res._asdict(), f)  # Correctly indented save
+            json.dump(res._asdict(), f, default=str)  # Correctly indented save
         vehicles_response = smartcar.get_vehicles(res.access_token)
         vehicle_ids = vehicles_response.vehicles
         vehicle = smartcar.Vehicle(vehicle_ids[0], res.access_token)
