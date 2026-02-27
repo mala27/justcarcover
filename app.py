@@ -135,6 +135,30 @@ client = smartcar.AuthClient(
     test_mode=True
 ) 
 
+def get_valid_access_token():
+    """Housekeeping: Ensures we always have a fresh token before talking to the car."""
+    try:
+        # Load your saved credentials
+        with open('urban_spoon_creds.json', 'r') as f:
+            creds = json.load(f)
+        
+        # Smartcar SDK has a built-in 'is_expired' check
+        # We check if the access_token is dead (2-hour limit)
+        if smartcar.is_expired(creds['expiration']):
+            # Swap the 60-day refresh_token for a NEW 2-hour access_token
+            new_creds = client.exchange_refresh_token(creds['refresh_token'])
+            
+            # Tidy up: Save the new credentials immediately
+            with open('urban_spoon_creds.json', 'w') as f:
+                json.dump(new_creds._asdict(), f, default=str)
+            return new_creds.access_token
+        
+        return creds['access_token']
+    except Exception as e:
+        st.error(f"Refresh failed: {e}. User may need to re-authenticate.")
+        return None
+
+
 # Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
 
@@ -142,32 +166,29 @@ code = st.query_params.get("code")
 auth_url = client.get_auth_url(["read_odometer", "read_vehicle_info"])
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
-
-# 3. Handling the Callback (Surgical Update: Persistence Fix)
+# 3. Handling the Callback (Surgical Update: Refresh Token Logic)
 code = st.query_params.get("code")
 
 if code and not st.session_state.get('test_drive_active'):
-    try:
-        res = client.exchange_code(code)
-        with open('urban_spoon_creds.json', 'w') as f:
-            json.dump(res._asdict(), f, default=str)  # Correctly indented save
-        vehicles_response = smartcar.get_vehicles(res.access_token)
-        vehicle_ids = vehicles_response.vehicles
-        vehicle = smartcar.Vehicle(vehicle_ids[0], res.access_token)
+    # Get a fresh badge (renews if 2-hour window passed)
+    valid_token = get_valid_access_token()
+    
+    if valid_token:
+        try:
+            vehicles_response = smartcar.get_vehicles(valid_token)
+            vehicle_ids = vehicles_response.vehicles
+            vehicle = smartcar.Vehicle(vehicle_ids[0], valid_token)
 
+            # Real-time data fetch
+            odometer = vehicle.odometer()
+            st.session_state.mileage = odometer.distance
+            st.session_state.test_drive_active = True
 
-        # Real-time data fetch
-        odometer = vehicle.odometer()
-        st.session_state.mileage = odometer.distance
-        st.session_state.test_drive_active = True
-
-         # clear query params so we don’t rerun repeatedly
-        st.query_params.clear()
-        st.rerun() # Forces Streamlit to show the new "Underwriting" section immediately
-    except Exception as e:
-        # show full exception for diagnostics
-        st.error(f"Handshake failed: {e}")
-
+            st.query_params.clear()
+            st.rerun() 
+        except Exception as e:
+            st.error(f"Real-time fetch failed: {e}")
+    
 
 # --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) ---
 if st.session_state.test_drive_active:
