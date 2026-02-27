@@ -136,27 +136,26 @@ client = smartcar.AuthClient(
 ) 
 
 def get_valid_access_token():
-    """Housekeeping: Ensures we always have a fresh token before talking to the car."""
+    """Housekeeping: Fixes the attribute error by using manual timestamp check."""
     try:
-        # Load your saved credentials
         with open('urban_spoon_creds.json', 'r') as f:
             creds = json.load(f)
         
-        # Smartcar SDK has a built-in 'is_expired' check
-        # We check if the access_token is dead (2-hour limit)
-        if smartcar.is_expired(creds['expiration']):
-            # Swap the 60-day refresh_token for a NEW 2-hour access_token
+        # Check if current time is past the expiration timestamp
+        # creds['expiration'] is saved as a string, so we convert to compare
+        is_expired = datetime.datetime.now() > datetime.datetime.fromisoformat(creds['expiration'].split('+')[0])
+
+        if is_expired:
             new_creds = client.exchange_refresh_token(creds['refresh_token'])
-            
-            # Tidy up: Save the new credentials immediately
             with open('urban_spoon_creds.json', 'w') as f:
                 json.dump(new_creds._asdict(), f, default=str)
             return new_creds.access_token
         
         return creds['access_token']
     except Exception as e:
-        st.error(f"Refresh failed: {e}. User may need to re-authenticate.")
+        # Fallback for first-time setup or missing file
         return None
+
 
 
 # Handling the Callback (Surgical Update: Persistence Fix)
