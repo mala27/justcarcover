@@ -1,11 +1,12 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
 # Master Version: v0.10 (Surgical Updates: Github/Streamlit/Smartcar Connection, Tuples/Strings, Other Error Issues Resolved)
 
+
 import streamlit as st #Engine powering user interface & enter boxes
 import pandas as pd #Housekeeping tool for organizing/saving quotes in CSV
 import os #Manage system paths
 import time #Timestamps for every new quote generated
-from datetime import datetime
+import datetime
 import json #For saving Smartcar credentials securely
 import requests #Talking to external APIs
 import smartcar #Heavy lifting & talking to external APIs & vehicles itself
@@ -63,8 +64,16 @@ with col_a:
     f_name = st.text_input("First Name", placeholder="e.g. James")
     s_name = st.text_input("Surname", placeholder="e.g. Smith")
     postcode = st.text_input("Enter Postcode", value="SP11 9JR")
+
 with col_b:
-    dob = st.date_input("Date of Birth", format="DD/MM/YYYY", value=datetime(1990, 1, 1))
+    # Indented to stay inside col_b
+    dob = st.date_input(
+        "Enter Date of Birth",
+        value=datetime.date(1975, 1, 1),
+        min_value=datetime.date(1935, 1, 1), 
+        max_value=datetime.date.today()
+    )
+    
     reg_no = st.text_input("Car Reg No", placeholder="e.g. AB12 CDE")
 
 
@@ -116,15 +125,14 @@ if "lat" in st.session_state and "lng" in st.session_state:
 st.divider()
 st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
 
-
-# 1. Credentials (Surgically Matched to Urban-Spoon Dashboard, Removed SC_URI & added Security via Environment Variables)
-client = smartcar.AuthClient(
-    client_id='d3eeac01-9bda-4de1-99fe-405365271b15',
-    client_secret='130adf6f-f153-4d66-9bfe-d9de4ebe0c7b',
-    redirect_uri='https://urban-spoon-ww564pwxqrcgggv-8501.app.github.dev/exchange',
-    test_mode=True 
-)
  
+# Tidy Priority 1: Replace hardcoded strings with st.secrets
+client = smartcar.AuthClient(
+    client_id=st.secrets["SMARTCAR_CLIENT_ID"],
+    client_secret=st.secrets["SMARTCAR_CLIENT_SECRET"],
+    redirect_uri=st.secrets["SMARTCAR_REDIRECT_URI"],
+    test_mode=True
+) 
 
 # Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
@@ -188,18 +196,23 @@ if st.session_state.test_drive_active:
                    
         if total_risk > 12:
             st.error("❌ DECLINED: Profile exceeds specialist risk appetite.")
+        
         else:
             perf_discount = max(0, 45 - (total_risk * 3))
-            total_discount = perf_discount + mileage_bonus # Combined "Smart" discount
-            
+            total_discount = perf_discount + mileage_bonus 
             base_price = 500 + (accidents * 150) + (crime_rate_val * 10)
             final_price = base_price * (1 - (total_discount / 100))
 
             st.balloons()
             st.success(f"✅ ELIGIBILITY CONFIRMED FOR {reg_no}")
             st.metric(f"Personalised Premium", f"£{final_price:,.2f}", f"-{total_discount}% Verified Discount")
-            st.download_button("📥 Download Your Quote", df.to_csv(index=False), "My_Urban_Spoon_Quote.csv", "text/csv")
 
+            # Correctly indented lines
+            st.session_state.df = df 
+            if "df" in st.session_state:
+                st.download_button("📥 Download Your Quote", st.session_state.df.to_csv(index=False), "My_Urban_Spoon_Quote.csv", "text/csv")
+            
+            
             # Update CSV log
             df = pd.DataFrame([[f"{f_name} {s_name}", dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
                                columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Verified_Miles', 'Premium'])
