@@ -71,7 +71,8 @@ with col_b:
         "Enter Date of Birth",
         value=datetime.date(1975, 1, 1),
         min_value=datetime.date(1935, 1, 1), 
-        max_value=datetime.date.today()
+        max_value=datetime.date.today(),
+        format="DD/MM/YYYY" # This forces the British display format
     )
     
     reg_no = st.text_input("Car Reg No", placeholder="e.g. AB12 CDE")
@@ -207,17 +208,17 @@ if st.session_state.test_drive_active:
             st.success(f"✅ ELIGIBILITY CONFIRMED FOR {reg_no}")
             st.metric(f"Personalised Premium", f"£{final_price:,.2f}", f"-{total_discount}% Verified Discount")
 
-            # Correctly indented lines
-            st.session_state.df = df 
-            if "df" in st.session_state:
-                st.download_button("📥 Download Your Quote", st.session_state.df.to_csv(index=False), "My_Urban_Spoon_Quote.csv", "text/csv")
-            
-            
-            # Update CSV log
+# 1. Create the df FIRST
             df = pd.DataFrame([[f"{f_name} {s_name}", dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
                                columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Verified_Miles', 'Premium'])
-        
+
+            # 2. THEN store it and show the button
+            st.session_state.df = df 
+            st.download_button("📥 Download Your Quote", st.session_state.df.to_csv(index=False), "My_Urban_Spoon_Quote.csv", "text/csv")
+            
+            # 3. Update CSV log
             df.to_csv('quotes.csv', mode='a', index=False, header=not os.path.isfile('quotes.csv'))
+
 
    
 # --- 7) HISTORY ---
