@@ -1,5 +1,5 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
-# Master Version: v0.10 (Surgical Updates: Github/Streamlit/Smartcar Connection, Tuples/Strings, Other Error Issues Resolved)
+# Master Version: v0.11 (Surgical Updates: Github/Streamlit/Smartcar Connection, Tuples/Strings, Other Error Issues Resolved)
 
 
 import streamlit as st #Engine powering user interface & enter boxes
