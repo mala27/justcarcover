@@ -135,6 +135,9 @@ client = smartcar.AuthClient(
     test_mode=True
 ) 
 
+# v0.11 - Minimized OAuth Scopes (Requesting only necessary data)
+scope = ['read_vehicle_info', 'read_vin', 'read_odometer']
+
 # v0.11 - OAuth Scope Definition for Smartcar Connect
 scope=['read_vehicle_info', 'read_odometer', 'read_fuel', 'read_location', 'control_security']
 
