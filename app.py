@@ -180,27 +180,25 @@ if code and not st.session_state.get('test_drive_active'):
     valid_token = get_valid_access_token()
     
 
-if valid_token:
+if valid_token and not st.session_state.get('test_drive_active'): # Add the 'and not' check
         try:
             vehicles_response = smartcar.get_vehicles(valid_token)
             vehicle_ids = vehicles_response.vehicles
             vehicle = smartcar.Vehicle(vehicle_ids[0], valid_token)
 
-            # v0.11 - Robust Error Handling for Vehicle Data
             try:
                 odometer = vehicle.odometer()
                 st.session_state.mileage = odometer.distance
-                st.session_state.test_drive_active = True
-                st.write(f"Odometer: {odometer.distance} km")
+                st.session_state.test_drive_active = True # This stops the loop
                 
                 st.query_params.clear()
                 st.rerun() 
             except smartcar.SmartcarException as e:
                 st.error(f"Car Error: {e.suggested_user_message or 'Check vehicle connection'}")
-                
         except Exception as e:
             st.error(f"Real-time fetch failed: {e}")
-    
+
+
 
 # --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) ---
 if st.session_state.test_drive_active:
