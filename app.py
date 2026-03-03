@@ -173,31 +173,29 @@ auth_url = client.get_auth_url(["read_odometer", "read_vin", "read_vehicle_info"
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 # 3. Handling the Callback (Surgical Update: Refresh Token Logic)
-code = st.query_params.get("code")
+
+valid_token = None
 
 if code and not st.session_state.get('test_drive_active'):
     # Get a fresh badge (renews if 2-hour window passed)
     valid_token = get_valid_access_token()
-    
 
-if valid_token and not st.session_state.get('test_drive_active'): # Add the 'and not' check
+if valid_token and not st.session_state.get('test_drive_active'):
+    try:
+        vehicles_response = smartcar.get_vehicles(valid_token)
+        vehicle_ids = vehicles_response.vehicles
+        vehicle = smartcar.Vehicle(vehicle_ids[0], valid_token)
+
         try:
-            vehicles_response = smartcar.get_vehicles(valid_token)
-            vehicle_ids = vehicles_response.vehicles
-            vehicle = smartcar.Vehicle(vehicle_ids[0], valid_token)
-
-            try:
-                odometer = vehicle.odometer()
-                st.session_state.mileage = odometer.distance
-                st.session_state.test_drive_active = True # This stops the loop
-                
-                st.query_params.clear()
-                st.rerun() 
-            except smartcar.SmartcarException as e:
-                st.error(f"Car Error: {e.suggested_user_message or 'Check vehicle connection'}")
-        except Exception as e:
-            st.error(f"Real-time fetch failed: {e}")
-
+            odometer = vehicle.odometer()
+            st.session_state.mileage = odometer.distance
+            st.session_state.test_drive_active = True 
+            st.query_params.clear()
+            st.rerun() 
+        except smartcar.SmartcarException as e:
+            st.error(f"Car Error: {e.suggested_user_message or 'Check connection'}")
+    except Exception as e:
+        st.error(f"Real-time fetch failed: {e}")
 
 
 # --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) ---
