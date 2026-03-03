@@ -168,8 +168,8 @@ def get_valid_access_token():
 # Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
 
-# 2. The "Connect" Link
-auth_url = client.get_auth_url(["read_odometer", "read_vehicle_info"])
+# 2. The "Connect" Link & Make OEMs Acceptance Automatic
+auth_url = client.get_auth_url(["read_odometer", "read_vin", "read_vehicle_info"])
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 # 3. Handling the Callback (Surgical Update: Refresh Token Logic)
@@ -179,11 +179,20 @@ if code and not st.session_state.get('test_drive_active'):
     # Get a fresh badge (renews if 2-hour window passed)
     valid_token = get_valid_access_token()
     
-    if valid_token:
-        try:
-            vehicles_response = smartcar.get_vehicles(valid_token)
-            vehicle_ids = vehicles_response.vehicles
-            vehicle = smartcar.Vehicle(vehicle_ids[0], valid_token)
+
+if valid_token:
+            try:
+                vehicles_response = smartcar.get_vehicles(valid_token)
+                vehicle_ids = vehicles_response.vehicles
+                vehicle = smartcar.Vehicle(vehicle_ids[0], valid_token)
+
+                # v0.11 - Robust Error Handling for Vehicle Data
+                try:
+                    odometer = vehicle.odometer()
+                    st.write(f"Odometer: {odometer.distance} km")
+                except smartcar.SmartcarException as e:
+                    st.error(f"Car Error: {e.suggested_user_message or 'Check vehicle connection'}")    
+
 
             # Real-time data fetch
             odometer = vehicle.odometer()
