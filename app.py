@@ -135,6 +135,10 @@ client = smartcar.AuthClient(
     test_mode=True
 ) 
 
+# v0.11 - OAuth Scope Definition for Smartcar Connect
+scope=['read_vehicle_info', 'read_odometer', 'read_fuel', 'read_location', 'control_security']
+
+
 def get_valid_access_token():
     """Housekeeping: Fixes the attribute error by using manual timestamp check."""
     try:
