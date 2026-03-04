@@ -38,6 +38,19 @@ def handle_webhook():
             st.json({"challenge": answer}) 
             st.stop()     
 
+# v0.12 - Phase 4: Handle Post-Connection Vehicle Errors (Operational Scale)
+        if data.get("eventType") == "VEHICLE_ERROR":
+            error_code = data.get("data", {}).get("code")
+            owner_actions = {
+                "IGNITION_ON": "🔑 Please turn off your engine to sync mileage.",
+                "IN_MOTION": "🚗 We can't read data while the car is moving!",
+                "REMOTE_ACCESS_DISABLED": "⚙️ Enable 'Remote Access' in car settings.",
+                "ASLEEP": "💤 Car is in deep sleep; drive briefly to wake it."
+            }
+            # Housekeeping: In production, this would trigger a push/email to the user
+            st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
+            st.stop()
+
 
 #Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = False
