@@ -216,14 +216,23 @@ code = st.query_params.get("code")
 auth_url = client.get_auth_url(["read_odometer", "read_vin", "read_vehicle_info"])
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
-# 3. Handling the Callback (Surgical Update: Refresh Token Logic)
+
+# 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic)
+error_type = st.query_params.get("error")
+if error_type:
+    error_map = {
+        "no_vehicles": "🚗 No cars found! Add your vehicle to your manufacturer's app first.",
+        "vehicle_incompatible": "❌ This car lacks the hardware for smart data features.",
+        "invalid_subscription": "🔑 Connected services expired. Please re-activate your data plan.",
+        "access_denied": "🚫 Permission required to calculate your discount!"
+    }
+    st.error(error_map.get(error_type, f"Error: {error_type}"))
+    st.stop()
 
 valid_token = None
-
 if code and not st.session_state.get('test_drive_active'):
-
-    # Get a fresh badge (renews if 2-hour window passed)
     valid_token = get_valid_access_token()
+
 
 if valid_token and not st.session_state.get('test_drive_active'):
     try:
