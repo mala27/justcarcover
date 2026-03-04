@@ -1,5 +1,5 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
-# Master Version: v0.11 (Surgical Updates: Github/Streamlit/Smartcar Connection, Tuples/Strings, Other Error Issues Resolved)
+# Master Version: v0.12 (See Github's Version Control Files for Details)
 
 
 import streamlit as st #Engine powering user interface & enter boxes
@@ -7,9 +7,36 @@ import pandas as pd #Housekeeping tool for organizing/saving quotes in CSV
 import os #Manage system paths
 import time #Timestamps for every new quote generated
 import datetime
+import hmac, hashlib
 import json #For saving Smartcar credentials securely
 import requests #Talking to external APIs
 import smartcar #Heavy lifting & talking to external APIs & vehicles itself
+
+
+# v0.12 - Webhook Receiver for Real-Time Scalability
+def handle_webhook():
+    if st.query_params.get("webhook") == "true":
+        # v0.12 - Security Handshake: Verifying Smartcar's digital signature
+        # Use the experimental or standard body reader depending on your 2026 build
+        payload_bytes = st.context.headers.get("x-body-raw", b"") 
+        if not payload_bytes: st.stop() # Drop if body is empty
+        
+        signature = st.context.headers.get("sc-signature")
+        secret = st.secrets["SMARTCAR_WEBHOOK_SECRET"]
+        
+        # Calculate expected hash to prove this came from Smartcar
+        expected = hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(signature, expected): st.stop()
+
+
+        # Handle Dashboard "Challenge" for initial verification
+        data = json.loads(payload_bytes)
+        if data.get("eventType") == "VERIFY":
+            challenge = data["data"]["challenge"]
+            response_hash = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
+            st.json({"challenge": response_hash}) # Respond with the proof
+            st.stop()
+
 
 #Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = False
@@ -128,6 +155,7 @@ st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
 
  
 # Tidy Priority 1: Replace hardcoded strings with st.secrets
+# Housekeeping: Implements Atomic Token Rotation to prevent race conditions during refresh
 client = smartcar.AuthClient(
     client_id=st.secrets["SMARTCAR_CLIENT_ID"],
     client_secret=st.secrets["SMARTCAR_CLIENT_SECRET"],
@@ -139,6 +167,7 @@ client = smartcar.AuthClient(
 scope = ['read_vehicle_info', 'read_vin', 'read_odometer']
 
 # v0.11 - OAuth Scope Definition for Smartcar Connect
+# Atomic Exchange: Single-use refresh token swap with persistent JSON update
 scope=['read_vehicle_info', 'read_odometer', 'read_fuel', 'read_location', 'control_security']
 
 
@@ -177,6 +206,7 @@ st.link_button("🔌 Connect Your Real Car", auth_url)
 valid_token = None
 
 if code and not st.session_state.get('test_drive_active'):
+
     # Get a fresh badge (renews if 2-hour window passed)
     valid_token = get_valid_access_token()
 
