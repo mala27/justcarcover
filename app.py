@@ -29,13 +29,14 @@ def handle_webhook():
         if not hmac.compare_digest(signature, expected): st.stop()
 
 
-        # Handle Dashboard "Challenge" for initial verification
+# v0.12 - Official Smartcar Handshake (HMAC Verification)
         data = json.loads(payload_bytes)
         if data.get("eventType") == "VERIFY":
             challenge = data["data"]["challenge"]
-            response_hash = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
-            st.json({"challenge": response_hash}) # Respond with the proof
-            st.stop()
+            # Housekeeping: 2026 SDK expects the HMAC hex string of the challenge
+            answer = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
+            st.json({"challenge": answer}) 
+            st.stop()     
 
 
 #Memory of app: ensuring it doesn't forget where the user was if the page refreshes
@@ -190,11 +191,17 @@ def get_valid_access_token():
         is_expired = datetime.datetime.now() > datetime.datetime.fromisoformat(creds['expiration'].split('+')[0])
 
         if is_expired:
+            # v0.12 - Securely rotating tokens and updating local cache
             new_creds = client.exchange_refresh_token(creds['refresh_token'])
+            
+            # Housekeeping: Handle both NamedTuple and Dictionary returns
+            updated_creds = new_creds._asdict() if hasattr(new_creds, '_asdict') else new_creds
+            
             with open('urban_spoon_creds.json', 'w') as f:
-                json.dump(new_creds._asdict(), f, default=str)
-            return new_creds.access_token
-        
+                json.dump(updated_creds, f, default=str)
+            return updated_creds['access_token']
+
+
         return creds['access_token']
     except Exception as e:
         # Fallback for first-time setup or missing file
