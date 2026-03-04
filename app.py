@@ -113,25 +113,33 @@ display_val = current_sel if "Enter postcode" not in current_sel else ""
 address_field = st.text_input("Address", value=display_val)
 
 
-# --- 3) ADDRESS FETCHING (Pillar 1) ---
+# 3) ADDRESS FETCHING (Pillar 1)
+# v0.12 - Syncing API fetch with verified session state
 if st.button("🔍 Fetch Verified Addresses"):
-    if postcode:
-        # Replace 'your_key_here' with your actual ak_ key from the dashboard
-        API_KEY = "ak_mlqkm51v9g4QpYFoD2ZHD76Ow3V8g" 
-        url = f"https://api.ideal-postcodes.co.uk/v1/postcodes/{postcode.replace(' ', '')}?api_key={API_KEY}"
+    # Pull directly from session_state to ensure it's the latest typed value
+    search_postcode = st.session_state.get("postcode", "").replace(" ", "").upper()
+    
+    if search_postcode:
+        API_KEY = "ak_mlqkm51v9g4QpYFoD2ZHD76Ow3V8g"
+        url = f"https://api.ideal-postcodes.co.uk/v1/postcodes/{search_postcode}?api_key={API_KEY}"
         
         try:
             response = requests.get(url)
             if response.status_code == 200:
                 data = response.json()
                 addresses = data.get('result', [])
-                # This pulls real line-level data for your dropdown
-                st.session_state.address_options = [f"{a['line_1']}, {a['line_2']}".strip(', ') for a in addresses]
-                st.session_state.address_options.append("Manual Entry...")
+                if addresses:
+                    st.session_state.address_options = [f"{a['line_1']}, {a['line_2']}".strip(', ') for a in addresses]
+                    st.session_state.address_options.append("Manual Entry...")
+                    st.rerun() # Refresh to show new options in selectbox
+                else:
+                    st.warning(f"No addresses found for {search_postcode}. Try another.")
             else:
-                st.error("Address not found or API issue.")
-        except:
-            st.error("Connection error.")
+                st.error(f"API Issue: {response.json().get('message', 'Unknown Error')}")
+        except Exception as e:
+            st.error(f"Connection error: {e}")
+
+
 
 # This line must be OUTSIDE the button block so it stays visible
 st.session_state.selected_address = st.selectbox("Address Line 1", options=st.session_state.address_options)
