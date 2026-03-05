@@ -15,7 +15,7 @@ import io
 from cryptography.fernet import Fernet
 
 
-handle_webhook()
+
 
 # v0.12 - Webhook Receiver for Real-Time Scalability
 def handle_webhook():
@@ -38,9 +38,11 @@ def handle_webhook():
             st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
             st.stop()
 
+handle_webhook()
+
 
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
-
+# Joshua kept suggesting to insert, delete this repeatedly!!
 
 #Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = False
