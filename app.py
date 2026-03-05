@@ -14,20 +14,38 @@ import smartcar #Heavy lifting & talking to external APIs & vehicles itself
 import io
 from cryptography.fernet import Fernet
 
+
 # v0.12 - Webhook Receiver for Real-Time Scalability
 def handle_webhook():
     if st.query_params.get("webhook") == "true":
-        # v0.12 - Security Handshake: Verifying Smartcar's digital signature
-        # Use the experimental or standard body reader depending on your 2026 build
         payload_bytes = st.context.headers.get("x-body-raw", b"") 
-        if not payload_bytes: st.stop() # Drop if body is empty
+        if not payload_bytes: st.stop()
         
         signature = st.context.headers.get("sc-signature")
         secret = st.secrets["SMARTCAR_WEBHOOK_SECRET"]
         
-        # Calculate expected hash to prove this came from Smartcar
         expected = hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(signature, expected): st.stop()
+
+        data = json.loads(payload_bytes)
+        if data.get("eventType") == "VERIFY":
+            challenge = data["data"]["challenge"]
+            answer = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
+            st.json({"challenge": answer}) 
+            st.stop()     
+
+        if data.get("eventType") == "VEHICLE_ERROR":
+            error_code = data.get("data", {}).get("code")
+            owner_actions = {
+                "IGNITION_ON": "🔑 Please turn off your engine to sync mileage.",
+                "IN_MOTION": "🚗 We can't read data while the car is moving!",
+                "REMOTE_ACCESS_DISABLED": "⚙️ Enable 'Remote Access' in car settings.",
+                "ASLEEP": "💤 Car is in deep sleep; drive briefly to wake it."
+            }
+            st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
+            st.stop()
+
+
 
 
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
@@ -344,4 +362,3 @@ if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
             st.dataframe(history_df.tail(3), use_container_width=True)
     except: st.warning("Encryption key mismatch or corrupted log.")
 
-    
