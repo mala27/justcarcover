@@ -46,8 +46,6 @@ def handle_webhook():
             st.stop()
 
 
-
-
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
 data = json.loads(payload_bytes)
         if data.get("eventType") == "VERIFY":
