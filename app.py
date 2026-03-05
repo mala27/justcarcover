@@ -20,31 +20,22 @@ def handle_webhook():
     if st.query_params.get("webhook") == "true":
         payload_bytes = st.context.headers.get("x-body-raw", b"") 
         if not payload_bytes: st.stop()
-        
         signature = st.context.headers.get("sc-signature")
         secret = st.secrets["SMARTCAR_WEBHOOK_SECRET"]
-        
         expected = hmac.new(secret.encode(), payload_bytes, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(signature, expected): st.stop()
-
         data = json.loads(payload_bytes)
         if data.get("eventType") == "VERIFY":
             challenge = data["data"]["challenge"]
             answer = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
             st.json({"challenge": answer}) 
             st.stop()     
-
         if data.get("eventType") == "VEHICLE_ERROR":
             error_code = data.get("data", {}).get("code")
-            owner_actions = {
-                "IGNITION_ON": "🔑 Please turn off your engine to sync mileage.",
-                "IN_MOTION": "🚗 We can't read data while the car is moving!",
-                "REMOTE_ACCESS_DISABLED": "⚙️ Enable 'Remote Access' in car settings.",
-                "ASLEEP": "💤 Car is in deep sleep; drive briefly to wake it."
-            }
+            owner_actions = {"IGNITION_ON": "🔑 Engine off to sync.", "IN_MOTION": "🚗 Car moving!", "ASLEEP": "💤 Car asleep."}
             st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
             st.stop()
-
+            
 
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
 data = json.loads(payload_bytes)
