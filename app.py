@@ -11,7 +11,8 @@ import hmac, hashlib
 import json #For saving Smartcar credentials securely
 import requests #Talking to external APIs
 import smartcar #Heavy lifting & talking to external APIs & vehicles itself
-
+import io
+from cryptography.fernet import Fernet
 
 # v0.12 - Webhook Receiver for Real-Time Scalability
 def handle_webhook():
@@ -310,13 +311,21 @@ if st.session_state.test_drive_active:
             st.download_button("📥 Download Your Quote", st.session_state.df.to_csv(index=False), "My_Urban_Spoon_Quote.csv", "text/csv")
             
             # 3. Update CSV log
-            df.to_csv('quotes.csv', mode='a', index=False, header=not os.path.isfile('quotes.csv'))
+            from cryptography.fernet import Fernet
+            f = Fernet(st.secrets["ENCRYPTION_KEY"].encode())
+            with open('quotes.csv', 'ab') as file: file.write(f.encrypt(df.to_csv(index=False).encode()) + b"\n")
 
 
-   
+
 # --- 7) HISTORY ---
 if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
     st.markdown("---")
     st.subheader("📜 Recent Submissions")
-    try: st.dataframe(pd.read_csv('quotes.csv').tail(3), width='stretch')
-    except: os.remove('quotes.csv')
+    try:
+        f = Fernet(st.secrets["ENCRYPTION_KEY"].encode())
+        with open('quotes.csv', 'rb') as file:
+            decrypted_rows = [f.decrypt(line.strip()).decode() for line in file if line.strip()]
+        history_df = pd.concat([pd.read_csv(io.StringIO(res)) for res in decrypted_rows])
+        st.dataframe(history_df.tail(3), use_container_width=True)
+    except: st.warning("Encryption key mismatch or corrupted log.")
+    
