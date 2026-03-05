@@ -1,5 +1,5 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
-# Master Version: v0.12 (See Github's Version Control Files for Details)
+# Master Version: v0.13 (See Github's Version Control Files for Details)
 
 
 import streamlit as st #Engine powering user interface & enter boxes
@@ -134,9 +134,9 @@ if st.button("🔍 Fetch Verified Addresses"):
     search_postcode = st.session_state.get("postcode", "").replace(" ", "").upper()
     
     if search_postcode:
-        API_KEY = "ak_mlqkm51v9g4QpYFoD2ZHD76Ow3V8g"
+        API_KEY = st.secrets["IDEAL_POSTCODES_KEY"]
         url = f"https://api.ideal-postcodes.co.uk/v1/postcodes/{search_postcode}?api_key={API_KEY}"
-        
+
         try:
             response = requests.get(url)
             if response.status_code == 200:
@@ -188,9 +188,6 @@ client = smartcar.AuthClient(
 # v0.11 - Minimized OAuth Scopes (Requesting only necessary data)
 scope = ['read_vehicle_info', 'read_vin', 'read_odometer']
 
-# v0.11 - OAuth Scope Definition for Smartcar Connect
-# Atomic Exchange: Single-use refresh token swap with persistent JSON update
-scope=['read_vehicle_info', 'read_odometer', 'read_fuel', 'read_location', 'control_security']
 
 
 def get_valid_access_token():
@@ -226,7 +223,7 @@ def get_valid_access_token():
 code = st.query_params.get("code")
 
 # 2. The "Connect" Link & Make OEMs Acceptance Automatic
-auth_url = client.get_auth_url(["read_odometer", "read_vin", "read_vehicle_info"])
+auth_url = client.get_auth_url(scope)
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 
