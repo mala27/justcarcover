@@ -31,13 +31,27 @@ def handle_webhook():
 
 
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
-        data = json.loads(payload_bytes)
+data = json.loads(payload_bytes)
         if data.get("eventType") == "VERIFY":
             challenge = data["data"]["challenge"]
             # Housekeeping: 2026 SDK expects the HMAC hex string of the challenge
             answer = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
             st.json({"challenge": answer}) 
             st.stop()     
+
+        # v0.12 - Phase 4: Handle Post-Connection Vehicle Errors (Operational Scale)
+        if data.get("eventType") == "VEHICLE_ERROR":
+            error_code = data.get("data", {}).get("code")
+            owner_actions = {
+                "IGNITION_ON": "🔑 Please turn off your engine to sync mileage.",
+                "IN_MOTION": "🚗 We can't read data while the car is moving!",
+                "REMOTE_ACCESS_DISABLED": "⚙️ Enable 'Remote Access' in car settings.",
+                "ASLEEP": "💤 Car is in deep sleep; drive briefly to wake it."
+            }
+            st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
+            st.stop()
+
+
 
 # v0.12 - Phase 4: Handle Post-Connection Vehicle Errors (Operational Scale)
         if data.get("eventType") == "VEHICLE_ERROR":
@@ -309,12 +323,12 @@ if st.session_state.test_drive_active:
             # 2. THEN store it and show the button
             st.session_state.df = df 
             st.download_button("📥 Download Your Quote", st.session_state.df.to_csv(index=False), "My_Urban_Spoon_Quote.csv", "text/csv")
+           
             
-            # 3. Update CSV log
-            from cryptography.fernet import Fernet
+            # 3. Update CSV log (v0.13 Encrypted Write)
             f = Fernet(st.secrets["ENCRYPTION_KEY"].encode())
-            with open('quotes.csv', 'ab') as file: file.write(f.encrypt(df.to_csv(index=False).encode()) + b"\n")
-
+            with open('quotes.csv', 'ab') as file:
+                file.write(f.encrypt(df.to_csv(index=False).encode()) + b"\n")
 
 
 # --- 7) HISTORY ---
@@ -325,7 +339,9 @@ if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
         f = Fernet(st.secrets["ENCRYPTION_KEY"].encode())
         with open('quotes.csv', 'rb') as file:
             decrypted_rows = [f.decrypt(line.strip()).decode() for line in file if line.strip()]
-        history_df = pd.concat([pd.read_csv(io.StringIO(res)) for res in decrypted_rows])
-        st.dataframe(history_df.tail(3), use_container_width=True)
+        if decrypted_rows:
+            history_df = pd.concat([pd.read_csv(io.StringIO(res)) for res in decrypted_rows], ignore_index=True)
+            st.dataframe(history_df.tail(3), use_container_width=True)
     except: st.warning("Encryption key mismatch or corrupted log.")
+
     
