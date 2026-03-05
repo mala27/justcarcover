@@ -15,6 +15,8 @@ import io
 from cryptography.fernet import Fernet
 
 
+handle_webhook()
+
 # v0.12 - Webhook Receiver for Real-Time Scalability
 def handle_webhook():
     if st.query_params.get("webhook") == "true":
@@ -35,43 +37,9 @@ def handle_webhook():
             owner_actions = {"IGNITION_ON": "🔑 Engine off to sync.", "IN_MOTION": "🚗 Car moving!", "ASLEEP": "💤 Car asleep."}
             st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
             st.stop()
-            
+
 
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
-data = json.loads(payload_bytes)
-        if data.get("eventType") == "VERIFY":
-            challenge = data["data"]["challenge"]
-            # Housekeeping: 2026 SDK expects the HMAC hex string of the challenge
-            answer = hmac.new(secret.encode(), challenge.encode(), hashlib.sha256).hexdigest()
-            st.json({"challenge": answer}) 
-            st.stop()     
-
-        # v0.12 - Phase 4: Handle Post-Connection Vehicle Errors (Operational Scale)
-        if data.get("eventType") == "VEHICLE_ERROR":
-            error_code = data.get("data", {}).get("code")
-            owner_actions = {
-                "IGNITION_ON": "🔑 Please turn off your engine to sync mileage.",
-                "IN_MOTION": "🚗 We can't read data while the car is moving!",
-                "REMOTE_ACCESS_DISABLED": "⚙️ Enable 'Remote Access' in car settings.",
-                "ASLEEP": "💤 Car is in deep sleep; drive briefly to wake it."
-            }
-            st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
-            st.stop()
-
-
-
-# v0.12 - Phase 4: Handle Post-Connection Vehicle Errors (Operational Scale)
-        if data.get("eventType") == "VEHICLE_ERROR":
-            error_code = data.get("data", {}).get("code")
-            owner_actions = {
-                "IGNITION_ON": "🔑 Please turn off your engine to sync mileage.",
-                "IN_MOTION": "🚗 We can't read data while the car is moving!",
-                "REMOTE_ACCESS_DISABLED": "⚙️ Enable 'Remote Access' in car settings.",
-                "ASLEEP": "💤 Car is in deep sleep; drive briefly to wake it."
-            }
-            # Housekeeping: In production, this would trigger a push/email to the user
-            st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
-            st.stop()
 
 
 #Memory of app: ensuring it doesn't forget where the user was if the page refreshes
