@@ -235,7 +235,6 @@ code = st.query_params.get("code")
 auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.f_name}|{st.session_state.s_name}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}"})
 
 # 2. The "Connect" Link & Make OEMs Acceptance Automatic
-auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.first_name}|{st.session_state.surname}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}"})
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 
