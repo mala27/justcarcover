@@ -15,7 +15,7 @@ import io
 from cryptography.fernet import Fernet
 
 
-handle_webhook()
+
 
 # v0.12 - Webhook Receiver for Real-Time Scalability
 def handle_webhook():
@@ -38,7 +38,7 @@ def handle_webhook():
             st.warning(owner_actions.get(error_code, f"Vehicle Issue: {error_code}"))
             st.stop()
 
-
+handle_webhook()
 
 
 # v0.12 - Official Smartcar Handshake (HMAC Verification)
