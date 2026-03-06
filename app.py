@@ -15,9 +15,7 @@ import io
 from cryptography.fernet import Fernet
 
 
-
-
-# v0.12 - Webhook Receiver for Real-Time Scalability
+# Smartcar Webhook Handshake & Error Listener (code checked 6-Mar-26)
 def handle_webhook():
     if st.query_params.get("webhook") == "true":
         payload_bytes = st.context.headers.get("x-body-raw", b"") 
@@ -41,12 +39,9 @@ def handle_webhook():
 handle_webhook()
 
 
-# v0.12 - Official Smartcar Handshake (HMAC Verification)
-# Joshua kept suggesting to insert, delete this repeatedly!!
-
-#Memory of app: ensuring it doesn't forget where the user was if the page refreshes
-if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = False
-if "mileage" not in st.session_state: st.session_state.mileage = 0
+# Memory of app: ensuring it doesn't forget where the user was if the page refreshes (checked code on 6-Mar-26)
+if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = "code" in st.query_params
+if "mileage" not in st.session_state: st.session_state.mileage = int(st.query_params.get("mileage", 0))
 
 
 # --- 1) SAAS GUI BRANDING & THEME ---
