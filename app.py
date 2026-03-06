@@ -97,7 +97,7 @@ col_a, col_b = st.columns(2)
 with col_a:
     f_name = st.text_input("First Name", key="f_name", placeholder="e.g. James")
     s_name = st.text_input("Surname", key="s_name", placeholder="e.g. Smith")
-    postcode = st.text_input("Enter Postcode", key="postcode", value="SP11 9JR")
+    postcode = st.text_input("Enter Postcode", key="postcode")
 
 with col_b:
     # Indented to stay inside col_b
