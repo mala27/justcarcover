@@ -50,6 +50,12 @@ if "dob" not in st.session_state: st.session_state.dob = st.query_params.get("do
 if "car_reg" not in st.session_state: st.session_state.car_reg = st.query_params.get("car_reg", "")
 
 
+# Restore user details from Smartcar handshake state
+if "state" in st.query_params:
+    s = st.query_params["state"].split("|")
+    st.session_state.update(dict(zip(["first_name", "surname", "postcode", "selected_address", "dob", "car_reg", "mileage"], s)))
+
+
 # --- 1) SAAS GUI BRANDING & THEME ---
 #CSS injection that transforms standard script into professional UBI Portal
 st.set_page_config(page_title="justcarcover | Broker Portal", layout="wide")
@@ -216,7 +222,7 @@ def get_valid_access_token():
 code = st.query_params.get("code")
 
 # 2. The "Connect" Link & Make OEMs Acceptance Automatic
-auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.get('first_name','')}|{st.session_state.get('surname','')}|{st.session_state.get('postcode','')}|{st.session_state.get('selected_address','')}|{st.session_state.get('dob','')}|{st.session_state.get('car_reg','')}|{st.session_state.get('mileage','')}"})
+auth_url = client.get_auth_url(scope, state=f"{st.session_state.first_name}|{st.session_state.surname}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}")
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 
