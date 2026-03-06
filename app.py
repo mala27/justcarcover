@@ -101,8 +101,8 @@ if "selected_address" not in st.session_state: st.session_state.selected_address
 
 col_a, col_b = st.columns(2)
 with col_a:
-    f_name = st.text_input("First Name", key="f_name", placeholder="e.g. James")
-    s_name = st.text_input("Surname", key="s_name", placeholder="e.g. Smith")
+    f_name = st.text_input("First Name", key="f_name")
+    s_name = st.text_input("Surname", key="s_name")
     postcode = st.text_input("Enter Postcode", key="postcode")
 
 with col_b:
