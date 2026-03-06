@@ -118,9 +118,9 @@ with col_b:
     reg_no = st.text_input("Car Reg No", placeholder="e.g. AB12 CDE")
 
 
-    #Surgical Update: it automates boring stuff of calling addresses
-    #Surgical Update: from Ideal Postcodes for professional-grade accuracy
-    #Clean logic to display the selected address without errors
+#Surgical Update: it automates boring stuff of calling addresses
+#Surgical Update: from Ideal Postcodes for professional-grade accuracy
+#Clean logic to display the selected address without errors
 current_sel = st.session_state.get('selected_address', "")
 display_val = current_sel if "Enter postcode" not in current_sel else ""
 address_field = st.text_input("Address", value=display_val)
@@ -222,7 +222,7 @@ def get_valid_access_token():
 code = st.query_params.get("code")
 
 # 2. The "Connect" Link & Make OEMs Acceptance Automatic
-auth_url = client.get_auth_url(scope, state=f"{st.session_state.first_name}|{st.session_state.surname}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}")
+auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.first_name}|{st.session_state.surname}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}"})
 st.link_button("🔌 Connect Your Real Car", auth_url)
 
 
