@@ -42,6 +42,12 @@ handle_webhook()
 # Memory of app: ensuring it doesn't forget where the user was if the page refreshes (checked code on 6-Mar-26)
 if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = "code" in st.query_params
 if "mileage" not in st.session_state: st.session_state.mileage = int(st.query_params.get("mileage", 0))
+if "first_name" not in st.session_state: st.session_state.first_name = st.query_params.get("first_name", "")
+if "surname" not in st.session_state: st.session_state.surname = st.query_params.get("surname", "")
+if "postcode" not in st.session_state: st.session_state.postcode = st.query_params.get("postcode", "")
+if "selected_address" not in st.session_state: st.session_state.selected_address = st.query_params.get("selected_address", "")
+if "dob" not in st.session_state: st.session_state.dob = st.query_params.get("dob", "")
+if "car_reg" not in st.session_state: st.session_state.car_reg = st.query_params.get("car_reg", "")
 
 
 # --- 1) SAAS GUI BRANDING & THEME ---
