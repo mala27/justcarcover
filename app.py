@@ -15,6 +15,13 @@ import io
 from cryptography.fernet import Fernet
 
 
+# Smartcar State Restoration: Unpack URL data and rerun to ensure widgets load correct values
+if "state" in st.query_params and "_restored" not in st.session_state:
+    raw = st.query_params["state"].split("|")
+    st.session_state.update(dict(zip(["f_name", "s_name", "postcode", "selected_address", "dob", "car_reg", "mileage"], raw)))
+    st.session_state["_restored"] = True
+    st.rerun()
+
 # Smartcar Webhook Handshake & Error Listener (code checked 6-Mar-26)
 def handle_webhook():
     if st.query_params.get("webhook") == "true":
