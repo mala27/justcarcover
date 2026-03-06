@@ -18,9 +18,14 @@ from cryptography.fernet import Fernet
 # Smartcar State Restoration: Unpack URL data and rerun to ensure widgets load correct values
 if "state" in st.query_params and "_restored" not in st.session_state:
     raw = st.query_params["state"].split("|")
-    st.session_state.update(dict(zip(["f_name", "s_name", "postcode", "selected_address", "dob", "car_reg", "mileage"], raw)))
+    # Keys must match f_name and s_name from your widgets below
+    data = dict(zip(["f_name", "s_name", "postcode", "selected_address", "dob", "car_reg", "mileage"], raw))
+    if data.get("mileage"): data["mileage"] = int(float(data["mileage"]))
+    st.session_state.update(data)
     st.session_state["_restored"] = True
     st.rerun()
+
+
 
 # Smartcar Webhook Handshake & Error Listener (code checked 6-Mar-26)
 def handle_webhook():
@@ -224,9 +229,10 @@ def get_valid_access_token():
         return None
 
 
-
 # Handling the Callback (Surgical Update: Persistence Fix)
 code = st.query_params.get("code")
+# Packing all users details: ensure we use f_name and s_name so the data actually gets saved
+auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.f_name}|{st.session_state.s_name}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}"})
 
 # 2. The "Connect" Link & Make OEMs Acceptance Automatic
 auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.first_name}|{st.session_state.surname}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}"})
