@@ -223,6 +223,10 @@ def get_valid_access_token():
         return None
 
 
+# 1. ADD THIS LINE (The "Passport Check"):
+code = st.query_params.get("code")
+
+
 # Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic
 if st.button("🔌 Connect Your Real Car"):
     ticket = str(uuid.uuid4())
