@@ -239,6 +239,7 @@ if st.button("🔌 Connect Your Real Car"):
         "test_drive_active": st.session_state.test_drive_active
     }
     auth_url = client.get_auth_url(scope, options={"state": session_token})
+    st.link_button("Confirm Connection Details", auth_url)
 
 
 # 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic)
