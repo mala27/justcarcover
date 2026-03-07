@@ -1,5 +1,5 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
-# Master Version: v0.13 (See Github's Version Control Files for Details)
+# Master Version: v0.14 (See Github's Version Control Files for Details)
 
 
 import streamlit as st #Engine powering user interface & enter boxes
@@ -22,7 +22,7 @@ from cryptography.fernet import Fernet
 if "state" in st.query_params and not st.session_state.get("_restored"):
     ticket = st.query_params["state"]
     if "vault" in st.session_state and ticket in st.session_state.vault:
-        # Pulling Robert's data out of the hotel safe
+        # Pulling users saved data out of the hotel safe
         st.session_state.update(st.session_state.vault[ticket])
         st.session_state["_restored"] = True
         st.query_params.clear()
@@ -230,16 +230,15 @@ code = st.query_params.get("code")
 
 # Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic
 if st.button("🔌 Connect Your Real Car"):
-    ticket = str(uuid.uuid4())
-    st.session_state.vault[ticket] = {
+    session_token = str(uuid.uuid4())
+    st.session_state.vault[session_token] = {
         "f_name": st.session_state.f_name, "s_name": st.session_state.s_name,
         "postcode": st.session_state.postcode, "dob": st.session_state.dob,
         "car_reg": st.session_state.car_reg, "mileage": st.session_state.mileage,
         "selected_address": st.session_state.get("selected_address", "")
+        "test_drive_active": st.session_state.test_drive_active
     }
-    auth_url = client.get_auth_url(scope, options={"state": ticket})
-    st.link_button("Confirm Connection Details", auth_url)
-
+    auth_url = client.get_auth_url(scope, options={"state": session_token})
 
 
 # 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic)
