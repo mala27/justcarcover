@@ -12,19 +12,30 @@ import json #For saving Smartcar credentials securely
 import requests #Talking to external APIs
 import smartcar #Heavy lifting & talking to external APIs & vehicles itself
 import io
+import uuid
 from cryptography.fernet import Fernet
 
 
-# Smartcar State Restoration: Unpack URL data and rerun to ensure widgets load correct values
-if "state" in st.query_params and "_restored" not in st.session_state:
-    raw = st.query_params["state"].split("|")
-    # Keys must match f_name and s_name from your widgets below
-    data = dict(zip(["f_name", "s_name", "postcode", "selected_address", "dob", "car_reg", "mileage"], raw))
-    if data.get("mileage"): data["mileage"] = int(float(data["mileage"]))
-    st.session_state.update(data)
-    st.session_state["_restored"] = True
-    st.rerun()
 
+# 1. THE RESTORATION VAULT: Unpack the "claim ticket" before any widgets render
+# Memory of app: ensuring it doesn't forget where the user was if the page refreshes
+if "state" in st.query_params and not st.session_state.get("_restored"):
+    ticket = st.query_params["state"]
+    if "vault" in st.session_state and ticket in st.session_state.vault:
+        # Pulling Robert's data out of the hotel safe
+        st.session_state.update(st.session_state.vault[ticket])
+        st.session_state["_restored"] = True
+        st.query_params.clear()
+        st.rerun()
+
+# 2. SAFE DEFAULTS: Use setdefault so we don't overwrite restored values with blanks
+st.session_state.setdefault("f_name", "")
+st.session_state.setdefault("s_name", "")
+st.session_state.setdefault("postcode", "")
+st.session_state.setdefault("dob", datetime.date(1975, 1, 1))
+st.session_state.setdefault("car_reg", "")
+st.session_state.setdefault("mileage", 0)
+st.session_state.setdefault("vault", {}) # Our hidden storage for the claim tickets
 
 
 # Smartcar Webhook Handshake & Error Listener (code checked 6-Mar-26)
@@ -50,22 +61,6 @@ def handle_webhook():
 
 handle_webhook()
 
-
-# Memory of app: ensuring it doesn't forget where the user was if the page refreshes (checked code on 6-Mar-26)
-if "test_drive_active" not in st.session_state: st.session_state.test_drive_active = "code" in st.query_params
-if "mileage" not in st.session_state: st.session_state.mileage = int(st.query_params.get("mileage", 0))
-if "first_name" not in st.session_state: st.session_state.first_name = st.query_params.get("first_name", "")
-if "surname" not in st.session_state: st.session_state.surname = st.query_params.get("surname", "")
-if "postcode" not in st.session_state: st.session_state.postcode = st.query_params.get("postcode", "")
-if "selected_address" not in st.session_state: st.session_state.selected_address = st.query_params.get("selected_address", "")
-if "dob" not in st.session_state: st.session_state.dob = st.query_params.get("dob", "")
-if "car_reg" not in st.session_state: st.session_state.car_reg = st.query_params.get("car_reg", "")
-
-
-# Restore user details from Smartcar handshake state
-if "state" in st.query_params:
-    s = st.query_params["state"].split("|")
-    st.session_state.update(dict(zip(["first_name", "surname", "postcode", "selected_address", "dob", "car_reg", "mileage"], s)))
 
 
 # --- 1) SAAS GUI BRANDING & THEME ---
@@ -183,8 +178,7 @@ if "lat" in st.session_state and "lng" in st.session_state:
 
 
 # --- 5) REAL SMARTCAR CONNECTION (Pillar 3) ---
-st.divider()
-st.subheader("🏁 Phase 1: Real-Time Vehicle Verification")
+
 
  
 # Tidy Priority 1: Replace hardcoded strings with st.secrets
@@ -229,13 +223,18 @@ def get_valid_access_token():
         return None
 
 
-# Handling the Callback (Surgical Update: Persistence Fix)
-code = st.query_params.get("code")
-# Packing all users details: ensure we use f_name and s_name so the data actually gets saved
-auth_url = client.get_auth_url(scope, options={"state": f"{st.session_state.f_name}|{st.session_state.s_name}|{st.session_state.postcode}|{st.session_state.selected_address}|{st.session_state.dob}|{st.session_state.car_reg}|{st.session_state.mileage}"})
+# Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic
+if st.button("🔌 Connect Your Real Car"):
+    ticket = str(uuid.uuid4())
+    st.session_state.vault[ticket] = {
+        "f_name": st.session_state.f_name, "s_name": st.session_state.s_name,
+        "postcode": st.session_state.postcode, "dob": st.session_state.dob,
+        "car_reg": st.session_state.car_reg, "mileage": st.session_state.mileage,
+        "selected_address": st.session_state.get("selected_address", "")
+    }
+    auth_url = client.get_auth_url(scope, options={"state": ticket})
+    st.link_button("Confirm Connection Details", auth_url)
 
-# 2. The "Connect" Link & Make OEMs Acceptance Automatic
-st.link_button("🔌 Connect Your Real Car", auth_url)
 
 
 # 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic)
