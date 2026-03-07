@@ -235,7 +235,7 @@ if st.button("🔌 Connect Your Real Car"):
         "f_name": st.session_state.f_name, "s_name": st.session_state.s_name,
         "postcode": st.session_state.postcode, "dob": st.session_state.dob,
         "car_reg": st.session_state.car_reg, "mileage": st.session_state.mileage,
-        "selected_address": st.session_state.get("selected_address", "")
+        "selected_address": st.session_state.get("selected_address", ""),
         "test_drive_active": st.session_state.test_drive_active
     }
     auth_url = client.get_auth_url(scope, options={"state": session_token})
