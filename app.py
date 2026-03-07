@@ -29,6 +29,7 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
         st.rerun()
 
 # 2. SAFE DEFAULTS: Use setdefault so we don't overwrite restored values with blanks
+st.session_state.setdefault("test_drive_active", False)
 st.session_state.setdefault("f_name", "")
 st.session_state.setdefault("s_name", "")
 st.session_state.setdefault("postcode", "")
