@@ -17,10 +17,10 @@ from cryptography.fernet import Fernet
 
 
 
-# 1. THE RESTORATION VAULT: Unpack the "claim ticket" before any widgets render
+# 1. THE RESTORATION VAULT: Unpack the "claim ticket" before any widgets render (checked Monday, 9-Mar)
 # Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "state" in st.query_params and not st.session_state.get("_restored"):
-    ticket = st.query_params["state"]
+    ticket = st.query_params.get("state")
     if "vault" in st.session_state and ticket in st.session_state.vault:
         # Pulling users saved data out of the hotel safe
         st.session_state.update(st.session_state.vault[ticket])
@@ -28,7 +28,7 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
         st.query_params.clear()
         st.rerun()
 
-# 2. SAFE DEFAULTS: Use setdefault so we don't overwrite restored values with blanks
+# 2. SAFE DEFAULTS: Use setdefault so we don't overwrite restored values with blanks (checked Monday, 9-Mar)
 st.session_state.setdefault("test_drive_active", False)
 st.session_state.setdefault("f_name", "")
 st.session_state.setdefault("s_name", "")
@@ -39,7 +39,7 @@ st.session_state.setdefault("mileage", 0)
 st.session_state.setdefault("vault", {}) # Our hidden storage for the claim tickets
 
 
-# Smartcar Webhook Handshake & Error Listener (code checked 6-Mar-26)
+# Smartcar Webhook Handshake & Error Listener (checked Monday, 9-Mar)
 def handle_webhook():
     if st.query_params.get("webhook") == "true":
         payload_bytes = st.context.headers.get("x-body-raw", b"") 
@@ -64,7 +64,7 @@ handle_webhook()
 
 
 
-# --- 1) SAAS GUI BRANDING & THEME ---
+# --- 1) SAAS GUI BRANDING & THEME --- (checked Monday, 9-Mar)
 #CSS injection that transforms standard script into professional UBI Portal
 st.set_page_config(page_title="justcarcover | Broker Portal", layout="wide")
 
@@ -89,7 +89,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- BRANDING LOGO & TITLE ---
+# --- BRANDING LOGO & TITLE --- (checked Monday, 9-Mar)
 #Pointing logo link (raw.githubusercontent) ensures branding never breaks, regardless where app is hosted
 col_logo, col_text = st.columns([1.5, 5])  # Widened the logo column ratio
 with col_logo:
@@ -99,11 +99,11 @@ with col_text:
     st.caption("v0.8 Smart-Price Engine | Address Persistence Active")
 st.divider()
 
-#Clever way to prevent a blank dropdown, from looking like a bug
+#Clever way to prevent a blank dropdown, from looking like a bug (checked Monday, 9-Mar)
 if "address_options" not in st.session_state:
     st.session_state.address_options = ["Enter postcode to see addresses..."]
 
-# --- 2) IDENTITY & POSTCODE ---
+# --- 2) IDENTITY & POSTCODE --- (checked Monday, 9-Mar)
 #Splitting into col_a & col_b makes portal looking professional application
 if "selected_address" not in st.session_state: st.session_state.selected_address = "Enter postcode to see addresses..."
 
@@ -126,7 +126,7 @@ with col_b:
     reg_no = st.text_input("Car Reg No", placeholder="e.g. AB12 CDE")
 
 
-#Surgical Update: it automates boring stuff of calling addresses
+#Surgical Update: it automates boring stuff of calling addresses (checked Monday, 9-Mar)
 #Surgical Update: from Ideal Postcodes for professional-grade accuracy
 #Clean logic to display the selected address without errors
 current_sel = st.session_state.get('selected_address', "")
@@ -134,7 +134,7 @@ display_val = current_sel if "Enter postcode" not in current_sel else ""
 address_field = st.text_input("Address", value=display_val)
 
 
-# 3) ADDRESS FETCHING (Pillar 1)
+# 3) ADDRESS FETCHING (Pillar 1) - (checked Monday, 9-Mar)
 # v0.12 - Syncing API fetch with verified session state
 if st.button("🔍 Fetch Verified Addresses"):
     # Pull directly from session_state to ensure it's the latest typed value
@@ -162,11 +162,11 @@ if st.button("🔍 Fetch Verified Addresses"):
 
 
 
-# This line must be OUTSIDE the button block so it stays visible
+# This line must be OUTSIDE the button block so it stays visible (checked Monday, 9-Mar)
 st.session_state.selected_address = st.selectbox("Address Line 1", options=st.session_state.address_options)
 
 
-# --- 4) LIVE CRIME API (Pillar 2) ---
+# --- 4) LIVE CRIME API (Pillar 2) --- (checked Monday, 9-Mar)
 v_crimes, acc_score = 0, 0
 # We use the coordinates already fetched from Ideal Postcodes in Pillar 1
 if "lat" in st.session_state and "lng" in st.session_state:
@@ -178,11 +178,11 @@ if "lat" in st.session_state and "lng" in st.session_state:
 
 
 
-# --- 5) REAL SMARTCAR CONNECTION (Pillar 3) ---
+# --- 5) REAL SMARTCAR CONNECTION (Pillar 3) --- (checked Monday, 9-Mar)
 
 
  
-# Tidy Priority 1: Replace hardcoded strings with st.secrets
+# Tidy Priority 1: Replace hardcoded strings with st.secrets (checked Monday, 9-Mar)
 # Housekeeping: Implements Atomic Token Rotation to prevent race conditions during refresh
 client = smartcar.AuthClient(
     client_id=st.secrets["SMARTCAR_CLIENT_ID"],
@@ -191,10 +191,8 @@ client = smartcar.AuthClient(
     test_mode=True
 ) 
 
-# v0.11 - Minimized OAuth Scopes (Requesting only necessary data)
+# v0.11 - Minimized OAuth Scopes (Requesting only necessary data) (checked Monday, 9-Mar)
 scope = ['read_vehicle_info', 'read_vin', 'read_odometer']
-
-
 
 def get_valid_access_token():
     """Housekeeping: Fixes the attribute error by using manual timestamp check."""
@@ -202,7 +200,7 @@ def get_valid_access_token():
         with open('urban_spoon_creds.json', 'r') as f:
             creds = json.load(f)
         
-        # Check if current time is past the expiration timestamp
+        # Check if current time is past the expiration timestamp (checked Monday, 9-Mar)
         # creds['expiration'] is saved as a string, so we convert to compare
         is_expired = datetime.datetime.now() > datetime.datetime.fromisoformat(creds['expiration'].split('+')[0])
 
@@ -224,11 +222,11 @@ def get_valid_access_token():
         return None
 
 
-# 1. ADD THIS LINE (The "Passport Check"):
+# 1. ADD THIS LINE (The "Passport Check"): (checked Monday, 9-Mar)
 code = st.query_params.get("code")
 
 
-# Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic
+# Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic (checked Monday, 9-Mar)
 if st.button("🔌 Connect Your Real Car"):
     session_token = str(uuid.uuid4())
     st.session_state.vault[session_token] = {
@@ -242,7 +240,7 @@ if st.button("🔌 Connect Your Real Car"):
     st.link_button("Confirm Connection Details", auth_url)
 
 
-# 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic)
+# 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic) (checked Monday, 9-Mar)
 error_type = st.query_params.get("error")
 if error_type:
     error_map = {
@@ -277,7 +275,7 @@ if valid_token and not st.session_state.get('test_drive_active'):
         st.error(f"Real-time fetch failed: {e}")
 
 
-# --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) ---
+# --- 6) UPDATED UNDERWRITING (Surgical Update: Odometer Lock-in) --- (checked Monday, 9-Mar)
 if st.session_state.test_drive_active:
     st.success(f"✅ Verified Odometer: {st.session_state.mileage:,.0f} miles")
     st.subheader("📊 Underwriting Decision (v0.8 Smart-Price)")
@@ -316,7 +314,7 @@ if st.session_state.test_drive_active:
             st.success(f"✅ ELIGIBILITY CONFIRMED FOR {reg_no}")
             st.metric(f"Personalised Premium", f"£{final_price:,.2f}", f"-{total_discount}% Verified Discount")
 
-# 1. Create the df FIRST
+# 1. Create the df FIRST (checked Monday, 9-Mar)
             df = pd.DataFrame([[f"{f_name} {s_name}", dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
                                columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Verified_Miles', 'Premium'])
 
@@ -331,7 +329,7 @@ if st.session_state.test_drive_active:
                 file.write(f.encrypt(df.to_csv(index=False).encode()) + b"\n")
 
 
-# --- 7) HISTORY ---
+# --- 7) HISTORY ---(checked Monday, 9-Mar)
 if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
     st.markdown("---")
     st.subheader("📜 Recent Submissions")
