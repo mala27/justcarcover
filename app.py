@@ -232,7 +232,7 @@ if st.button("🔌 Connect Your Real Car"):
         state = str(uuid.uuid4())
         # Joshua's Save: Storing f_name into the Vault before Smartcar exit
         st.session_state.vault[state] = {"f_name": st.session_state.get("f_name", "")}
-        auth_url = client.get_auth_url(scope, force_prompt=True, state=state)
+        auth_url = client.get_auth_url(scope, options={"state": state, "force_prompt": True})
         st.link_button("Confirm Connection Details", auth_url)
 
 
