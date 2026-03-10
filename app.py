@@ -20,13 +20,17 @@ from cryptography.fernet import Fernet
 # 1. THE RESTORATION VAULT: Unpack the "claim ticket" before any widgets render (checked Monday, 9-Mar)
 # Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "state" in st.query_params and not st.session_state.get("_restored"):
-    ticket = st.query_params.get("state")
+    ticket = st.query_params("state")
     if "vault" in st.session_state and ticket in st.session_state.vault:
-        # Pulling users saved data out of the hotel safe
+        # Pulling users saved data out of the hotel safely
         st.session_state.update(st.session_state.vault[ticket])
+        # Joshua's Fix: Grab the car key BEFORE clearing the URL
+        if "code" in st.query_params:
+            st.session_state["smartcar_code"] = st.query_params["code"]
         st.session_state["_restored"] = True
         st.query_params.clear()
         st.rerun()
+
 
 # 2. SAFE DEFAULTS: Use setdefault so we don't overwrite restored values with blanks (checked Monday, 9-Mar)
 st.session_state.setdefault("test_drive_active", False)
