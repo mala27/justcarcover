@@ -23,7 +23,7 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
     ticket = st.query_params["state"]
     if "vault" in st.session_state and ticket in st.session_state.vault:
         # Restoration Test: Pulling ONLY First Name from the vault
-        st.session_state["f_name"] = st.session_state.vault[ticket].get("f_name", "")
+        st.session_state.update(st.session_state.vault[ticket])
         st.session_state["_restored"] = True
         st.query_params.clear()
         st.rerun()
