@@ -16,6 +16,13 @@ import uuid
 from cryptography.fernet import Fernet
 
 
+# Our hidden storage for users details saved & associated it with the claim tickets
+@st.cache_resource
+def get_server_vault():
+    return {}
+
+vault = get_server_vault()
+
 
 # 1. THE RESTORATION VAULT: Unpack the "claim ticket" before any widgets render (checked Monday, 9-Mar)
 # Memory of app: ensuring it doesn't forget where the user was if the page refreshes
@@ -37,7 +44,6 @@ st.session_state.setdefault("postcode", "")
 st.session_state.setdefault("dob", datetime.date(1975, 1, 1))
 st.session_state.setdefault("car_reg", "")
 st.session_state.setdefault("mileage", 0)
-st.session_state.setdefault("vault", {}) # Our hidden storage for the claim tickets
 
 
 # Smartcar Webhook Handshake & Error Listener (checked Monday, 9-Mar)
