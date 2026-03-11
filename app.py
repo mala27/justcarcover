@@ -28,9 +28,9 @@ vault = get_server_vault()
 # Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "state" in st.query_params and not st.session_state.get("_restored"):
     ticket = st.query_params["state"]
-    if "vault" in st.session_state and ticket in st.session_state.vault:
+    if ticket in vault:
         # Restoration Test: Pulling ONLY First Name from the vault
-        st.session_state.update(st.session_state.vault[ticket])
+        st.session_state.update(vault[ticket])
         st.session_state["_restored"] = True
         st.query_params.clear()
         st.rerun()
