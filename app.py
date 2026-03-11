@@ -237,7 +237,7 @@ code = st.query_params.get("code")
 if st.button("🔌 Connect Your Real Car"):
     state = str(uuid.uuid4())
     # Joshua's Save: Storing the full users_data into the Vault before Smartcar exit
-    st.session_state.vault[state] = {
+    vault[state] = {
         "f_name": st.session_state.get("f_name", ""),
         "s_name": st.session_state.get("s_name", ""),
         "postcode": st.session_state.get("postcode", ""),
