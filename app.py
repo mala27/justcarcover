@@ -25,12 +25,17 @@ vault = get_server_vault()
 
 
 # 1. THE RESTORATION VAULT: Unpack the "claim ticket" before any widgets render (checked Monday, 9-Mar)
-# Memory of app: ensuring it doesn't forget where the user was if the page refreshes
 if "state" in st.query_params and not st.session_state.get("_restored"):
     ticket = st.query_params["state"]
     if ticket in vault:
-        # Restoration Test: Pulling ONLY First Name from the vault
-        st.session_state.update(vault[ticket])
+        # Steve's Suggested Restoration: Mapping each field back specifically
+        user_data = vault.get(ticket)
+        st.session_state.f_name = user_data.get("f_name", "")
+        st.session_state.s_name = user_data.get("s_name", "")
+        st.session_state.postcode = user_data.get("postcode", "")
+        st.session_state.selected_address = user_data.get("selected_address", "")
+        st.session_state.car_reg = user_data.get("car_reg", "")
+        
         st.session_state["_restored"] = True
         st.query_params.clear()
         st.rerun()
@@ -241,7 +246,8 @@ if st.button("🔌 Connect Your Real Car"):
         "f_name": st.session_state.get("f_name", ""),
         "s_name": st.session_state.get("s_name", ""),
         "postcode": st.session_state.get("postcode", ""),
-        "selected_address": st.session_state.get("selected_address", "")
+        "selected_address": st.session_state.get("selected_address", ""),
+        "car_reg": st.session_state.get("car_reg", "")
     }
     auth_url = client.get_auth_url(scope, options={"state": state, "force_prompt": True})
     st.link_button("Confirm Connection Details", auth_url)
