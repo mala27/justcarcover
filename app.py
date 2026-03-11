@@ -229,11 +229,16 @@ code = st.query_params.get("code")
 
 # Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic (checked Monday, 9-Mar)
 if st.button("🔌 Connect Your Real Car"):
-        state = str(uuid.uuid4())
-        # Joshua's Save: Storing f_name into the Vault before Smartcar exit
-        st.session_state.vault[state] = {"f_name": st.session_state.get("f_name", "")}
-        auth_url = client.get_auth_url(scope, options={"state": state, "force_prompt": True})
-        st.link_button("Confirm Connection Details", auth_url)
+    state = str(uuid.uuid4())
+    # Joshua's Save: Storing the full users_data into the Vault before Smartcar exit
+    st.session_state.vault[state] = {
+        "f_name": st.session_state.get("f_name", ""),
+        "s_name": st.session_state.get("s_name", ""),
+        "postcode": st.session_state.get("postcode", ""),
+        "selected_address": st.session_state.get("selected_address", "")
+    }
+    auth_url = client.get_auth_url(scope, options={"state": state, "force_prompt": True})
+    st.link_button("Confirm Connection Details", auth_url)
 
 
 # 3. Handling the Callback (v0.12 Phase 4: Error Mapping & Token Logic) (checked Monday, 9-Mar)
