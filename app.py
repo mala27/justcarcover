@@ -34,8 +34,10 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
         st.session_state.s_name = user_data.get("s_name", "")
         st.session_state.postcode = user_data.get("postcode", "")
         st.session_state.selected_address = user_data.get("selected_address", "")
+        st.session_state.dob = user_data.get("dob", None)
         st.session_state.car_reg = user_data.get("car_reg", "")
-        
+        st.session_state.test_drive_active = user_data.get("test_drive_active", False)
+
         st.session_state["_restored"] = True
         st.query_params.clear()
         st.rerun()
@@ -126,16 +128,15 @@ with col_a:
     postcode = st.text_input("Enter Postcode", key="postcode")
 
 with col_b:
-    # Indented to stay inside col_b
     dob = st.date_input(
         "Enter Date of Birth",
-        value=datetime.date(1975, 1, 1),
+        value=st.session_state.get("dob", datetime.date(1975, 1, 1)), # Uses restored DOB
         min_value=datetime.date(1935, 1, 1), 
         max_value=datetime.date.today(),
-        format="DD/MM/YYYY" # This forces the British display format
+        format="DD/MM/YYYY"
     )
     
-    reg_no = st.text_input("Car Reg No", placeholder="e.g. AB12 CDE")
+    reg_no = st.text_input("Car Reg No", key="car_reg", placeholder="e.g. AB12 CDE") # Added key="car_reg"
 
 
 #Surgical Update: it automates boring stuff of calling addresses (checked Monday, 9-Mar)
