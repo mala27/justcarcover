@@ -247,7 +247,9 @@ if st.button("🔌 Connect Your Real Car"):
         "s_name": st.session_state.get("s_name", ""),
         "postcode": st.session_state.get("postcode", ""),
         "selected_address": st.session_state.get("selected_address", ""),
-        "car_reg": st.session_state.get("car_reg", "")
+        "dob": st.session_state.get("dob", None),
+        "car_reg": st.session_state.get("car_reg", ""),
+        "test_drive_active": True
     }
     auth_url = client.get_auth_url(scope, options={"state": state, "force_prompt": True})
     st.link_button("Confirm Connection Details", auth_url)
