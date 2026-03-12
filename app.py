@@ -43,14 +43,14 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
         st.rerun()
 
 
-# 2. SAFE DEFAULTS: Use setdefault so we don't overwrite restored values with blanks (checked Monday, 9-Mar)
-st.session_state.setdefault("test_drive_active", False)
+# SAFE DEFAULTS: This ensures Streamlit doesn't wipe the above values when widgets load
 st.session_state.setdefault("f_name", "")
 st.session_state.setdefault("s_name", "")
 st.session_state.setdefault("postcode", "")
-st.session_state.setdefault("dob", datetime.date(1975, 1, 1))
+st.session_state.setdefault("selected_address", "")
+st.session_state.setdefault("dob", None)
 st.session_state.setdefault("car_reg", "")
-st.session_state.setdefault("mileage", 0)
+st.session_state.setdefault("test_drive_active", False)
 
 
 # Smartcar Webhook Handshake & Error Listener (checked Monday, 9-Mar)
