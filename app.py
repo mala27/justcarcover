@@ -37,12 +37,14 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
         st.session_state.dob = user_data.get("dob", None)
         st.session_state.car_reg = user_data.get("car_reg", "")
         st.session_state.test_drive_active = user_data.get("test_drive_active", False)
+        st.session_state.lat = user_data.get("lat", 51.5074)
+        st.session_state.lng = user_data.get("lng", -0.1278)
 
         st.session_state["_restored"] = True
         st.query_params.clear()
-        st.rerun()
+        st.rerun() # Ensure this is aligned with the session_state lines above it
 
-
+    
 # SAFE DEFAULTS: This ensures Streamlit doesn't wipe the above values when widgets load
 st.session_state.setdefault("f_name", "")
 st.session_state.setdefault("s_name", "")
@@ -51,6 +53,8 @@ st.session_state.setdefault("selected_address", "")
 st.session_state.setdefault("dob", None)
 st.session_state.setdefault("car_reg", "")
 st.session_state.setdefault("test_drive_active", False)
+st.session_state.setdefault("lat", 51.5074)
+st.session_state.setdefault("lng", -0.1278)
 
 
 # Smartcar Webhook Handshake & Error Listener (checked Monday, 9-Mar)
@@ -75,7 +79,6 @@ def handle_webhook():
             st.stop()
 
 handle_webhook()
-
 
 
 # --- 1) SAAS GUI BRANDING & THEME --- (checked Monday, 9-Mar)
@@ -165,6 +168,8 @@ if st.button("🔍 Fetch Verified Addresses"):
                 if addresses:
                     st.session_state.address_options = [f"{a['line_1']}, {a['line_2']}".strip(', ') for a in addresses]
                     st.session_state.address_options.append("Manual Entry...")
+                    st.session_state.lat = addresses[0].get('latitude', 51.5074)
+                    st.session_state.lng = addresses[0].get('longitude', -0.1278)
                     st.rerun() # Refresh to show new options in selectbox
                 else:
                     st.warning(f"No addresses found for {search_postcode}. Try another.")
@@ -190,11 +195,9 @@ if "lat" in st.session_state and "lng" in st.session_state:
     except: pass
 
 
-
 # --- 5) REAL SMARTCAR CONNECTION (Pillar 3) --- (checked Monday, 9-Mar)
 
 
- 
 # Tidy Priority 1: Replace hardcoded strings with st.secrets (checked Monday, 9-Mar)
 # Housekeeping: Implements Atomic Token Rotation to prevent race conditions during refresh
 client = smartcar.AuthClient(
@@ -250,6 +253,8 @@ if st.button("🔌 Connect Your Real Car"):
         "selected_address": st.session_state.get("selected_address", ""),
         "dob": st.session_state.get("dob", datetime.date(1975, 1, 1)),
         "car_reg": st.session_state.get("car_reg", ""),
+        "lat": st.session_state.get("lat", 51.5074),
+        "lng": st.session_state.get("lng", -0.1278),
         "test_drive_active": True
     }
     auth_url = client.get_auth_url(scope, options={"state": state, "force_prompt": True})
@@ -345,6 +350,7 @@ if st.session_state.test_drive_active:
                 file.write(f.encrypt(df.to_csv(index=False).encode()) + b"\n")
 
 
+
 # --- 7) HISTORY ---(checked Monday, 9-Mar)
 if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
     st.markdown("---")
@@ -353,8 +359,9 @@ if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
         f = Fernet(st.secrets["ENCRYPTION_KEY"].encode())
         with open('quotes.csv', 'rb') as file:
             decrypted_rows = [f.decrypt(line.strip()).decode() for line in file if line.strip()]
+        
         if decrypted_rows:
             history_df = pd.concat([pd.read_csv(io.StringIO(res)) for res in decrypted_rows], ignore_index=True)
             st.dataframe(history_df.tail(3), use_container_width=True)
-    except: st.warning("Encryption key mismatch or corrupted log.")
-
+    except: 
+        st.warning("Encryption key mismatch or corrupted log.")
