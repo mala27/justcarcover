@@ -55,6 +55,7 @@ st.session_state.setdefault("car_reg", "")
 st.session_state.setdefault("test_drive_active", False)
 st.session_state.setdefault("lat", 51.5074)
 st.session_state.setdefault("lng", -0.1278)
+st.session_state.setdefault("mileage", 0.0) # Add this line here
 
 
 # Smartcar Webhook Handshake & Error Listener (checked Monday, 9-Mar)
