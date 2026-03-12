@@ -248,7 +248,7 @@ if st.button("🔌 Connect Your Real Car"):
         "s_name": st.session_state.get("s_name", ""),
         "postcode": st.session_state.get("postcode", ""),
         "selected_address": st.session_state.get("selected_address", ""),
-        "dob": st.session_state.get("dob", None),
+        "dob": st.session_state.get("dob", datetime.date(1975, 1, 1)),
         "car_reg": st.session_state.get("car_reg", ""),
         "test_drive_active": True
     }
