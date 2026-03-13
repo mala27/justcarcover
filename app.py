@@ -1,5 +1,5 @@
 # Project Link: https://urban-spoon-ww564pwxqrcgggv.github.dev/
-# Master Version: v0.14 (See Github's Version Control Files for Details)
+# Master Version: v0.15 (See Github's Version Control Files for Details)
 
 
 import streamlit as st #Engine powering user interface & enter boxes
@@ -83,39 +83,65 @@ handle_webhook()
 
 
 # --- 1) SAAS GUI BRANDING & THEME --- (checked Monday, 9-Mar)
-#CSS injection that transforms standard script into professional UBI Portal
+# --- 1) SAAS GUI BRANDING & THEME --- (Updated Friday, 13-Mar)
 st.set_page_config(page_title="justcarcover | Broker Portal", layout="wide")
+
+# --- NAVIGATION BAR ---
+nav_col1, nav_col2 = st.columns([3, 1])
+with nav_col1:
+    st.markdown("""
+        <div style="display: flex; gap: 30px; align-items: center; font-family: sans-serif; font-weight: 500; margin-bottom: 10px;">
+            <span style="cursor: pointer; color: #111;">Home</span>
+            <span style="cursor: pointer; color: #666;">FAQ</span>
+            <span style="cursor: pointer; color: #666;">About Us</span>
+        </div>
+    """, unsafe_allow_html=True)
+with nav_col2:
+    st.markdown("""
+        <div style="text-align: right; font-family: sans-serif; font-weight: 600; color: #013a63; cursor: pointer;">
+            MyAccount
+        </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("""
     <style>
-    .stApp { background-color: #f4f7f9; }
+    /* Lemonade-inspired Soft UI */
+    .stApp { background-color: #ffffff; } 
+    
+    div[data-testid="stMetric"] {
+        background-color: #f9f9fb;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 20px !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    
     div.stButton > button { 
         background-color: #013a63 !important; 
         color: white !important; 
-        border-radius: 10px !important;
-        height: 3.5em !important;
-        font-weight: bold !important;
+        border-radius: 30px !important; 
         border: none !important;
+        padding: 0px 40px !important;
+        transition: all 0.3s ease;
     }
-    div[data-testid="stMetric"] {
-        background-color: #ffffff;
-        border: 1px solid #e1e4e8;
-        padding: 15px;
-        border-radius: 12px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+    .stTextInput input, .stDateInput input, .stSelectbox [data-baseweb="select"] {
+        border-radius: 12px !important;
+        border: 1px solid #eee !important;
+        background-color: #fafafa !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- BRANDING LOGO & TITLE --- (checked Monday, 9-Mar)
-#Pointing logo link (raw.githubusercontent) ensures branding never breaks, regardless where app is hosted
-col_logo, col_text = st.columns([1.5, 5])  # Widened the logo column ratio
+# --- BRANDING LOGO & TITLE ---
+col_logo, col_text = st.columns([1.5, 5])
 with col_logo:
-    st.image("https://raw.githubusercontent.com/mala27/justcarcover/main/logo.png", width=200) # Increased width to 200
+    st.image("https://raw.githubusercontent.com/mala27/justcarcover/main/logo.png", width=200)
 with col_text:
     st.title("justcarcover | Specialist Broker Portal")
-    st.caption("v0.8 Smart-Price Engine | Address Persistence Active")
+    st.caption("v0.15 Smart-Price Engine | Soft UI Active")
 st.divider()
+
 
 #Clever way to prevent a blank dropdown, from looking like a bug (checked Monday, 9-Mar)
 if "address_options" not in st.session_state:
@@ -336,8 +362,10 @@ if st.session_state.test_drive_active:
             st.success(f"✅ ELIGIBILITY CONFIRMED FOR {reg_no}")
             st.metric(f"Personalised Premium", f"£{final_price:,.2f}", f"-{total_discount}% Verified Discount")
 
-# 1. Create the df FIRST (checked Monday, 9-Mar)
-            df = pd.DataFrame([[f"{f_name} {s_name}", dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
+
+# 1. Create the df FIRST (checked Monday, 13-Mar)
+            safe_dob = dob if dob else datetime.date(1975, 1, 1)
+            df = pd.DataFrame([[f"{f_name} {s_name}", safe_dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
                                columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Verified_Miles', 'Premium'])
 
             # 2. THEN store it and show the button
