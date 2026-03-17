@@ -86,13 +86,8 @@ def handle_webhook():
 handle_webhook()
 
 
-# --- 1) SAAS GUI BRANDING & THEME --- (checked 9&13-Mar)
-st.set_page_config(page_title="justcarcover | Broker Portal", layout="wide")
-/* Saga Green Toggle Fix */
-div[data-testid="stCheckbox"] > label > div[role="switch"][aria-checked="true"] {
-    background-color: #2e7d32 !important;
-}
-
+# --- 1) SAAS GUI BRANDING & THEME ---
+st.set_page_config(page_title="justcarcover | Saga Portal", layout="wide")
 
 # --- NAVIGATION BAR ---
 nav_col1, nav_col2 = st.columns([3, 1])
@@ -116,8 +111,8 @@ st.markdown("""
     /* Lemonade-inspired Soft UI */
     .stApp { background-color: #ffffff; } 
     
-    /* Saga Green Toggle Fix */
-    div[data-testid="stElementContainer"] [data-testid="stCheckbox"] div[role="switch"][aria-checked="true"] {
+    /* Saga Green Toggle Fix - Now Safely Inside CSS Block */
+    div[data-testid="stCheckbox"] div[role="switch"][aria-checked="true"] {
         background-color: #2e7d32 !important;
     }
       
@@ -145,6 +140,8 @@ st.markdown("""
     }
     </style>
     """, unsafe_allow_html=True)
+
+
 
 # --- BRANDING LOGO & TITLE ---
 col_logo, col_text = st.columns([1.5, 5])
