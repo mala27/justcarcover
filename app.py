@@ -112,10 +112,10 @@ st.markdown("""
     .stApp { background-color: #ffffff; } 
     
     /* Saga Green Toggle Fix */
-div[data-testid="stCheckbox"] > label > div[role="switch"][aria-checked="true"] {
-    background-color: #2e7d32 !important;
-}
-      
+    div[role="switch"][aria-checked="true"] {
+        background-color: #2e7d32 !important;
+    }
+
     div[data-testid="stMetric"] {
         background-color: #f9f9fb;
         border: none !important;
