@@ -115,13 +115,12 @@ st.markdown("""
     <style>
     /* Lemonade-inspired Soft UI */
     .stApp { background-color: #ffffff; } 
-
+    
     /* Saga Green Toggle Fix */
     div[data-testid="stElementContainer"] [data-testid="stCheckbox"] div[role="switch"][aria-checked="true"] {
         background-color: #2e7d32 !important;
     }
-
-    
+      
     div[data-testid="stMetric"] {
         background-color: #f9f9fb;
         border: none !important;
