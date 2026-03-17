@@ -28,13 +28,15 @@ vault = get_server_vault()
 if "state" in st.query_params and not st.session_state.get("_restored"):
     ticket = st.query_params["state"]
     if ticket in vault:
-        # Steve's Suggested Restoration: Mapping each field back specifically
+        # v.01 Saga Restoration: Mapping new users-data fields back specifically
         user_data = vault.get(ticket)
         st.session_state.f_name = user_data.get("f_name", "")
         st.session_state.s_name = user_data.get("s_name", "")
+        st.session_state.gender = user_data.get("gender", "Male")
         st.session_state.postcode = user_data.get("postcode", "")
         st.session_state.selected_address = user_data.get("selected_address", "")
-        st.session_state.dob = user_data.get("dob", None)
+        st.session_state.dob_text = user_data.get("dob_text", "")
+        st.session_state.homeowner = user_data.get("homeowner", True)
         st.session_state.car_reg = user_data.get("car_reg", "")
         st.session_state.test_drive_active = user_data.get("test_drive_active", False)
         st.session_state.lat = user_data.get("lat", 51.5074)
@@ -42,20 +44,22 @@ if "state" in st.query_params and not st.session_state.get("_restored"):
 
         st.session_state["_restored"] = True
         st.query_params.clear()
-        st.rerun() # Ensure this is aligned with the session_state lines above it
+        st.rerun()
 
     
 # SAFE DEFAULTS: This ensures Streamlit doesn't wipe the above values when widgets load
 st.session_state.setdefault("f_name", "")
 st.session_state.setdefault("s_name", "")
+st.session_state.setdefault("gender", "Male")
 st.session_state.setdefault("postcode", "")
 st.session_state.setdefault("selected_address", "")
-st.session_state.setdefault("dob", None)
+st.session_state.setdefault("dob_text", "")
+st.session_state.setdefault("homeowner", True)
 st.session_state.setdefault("car_reg", "")
 st.session_state.setdefault("test_drive_active", False)
 st.session_state.setdefault("lat", 51.5074)
 st.session_state.setdefault("lng", -0.1278)
-st.session_state.setdefault("mileage", 0.0) # Add this line here
+st.session_state.setdefault("mileage", 0.0)
 
 
 # Smartcar Webhook Handshake & Error Listener (checked Monday, 9-Mar)
@@ -158,15 +162,21 @@ with col_a:
     postcode = st.text_input("Enter Postcode", key="postcode")
 
 with col_b:
-    dob = st.date_input(
-        "Enter Date of Birth",
-        value=st.session_state.get("dob", datetime.date(1975, 1, 1)), # Uses restored DOB
-        min_value=datetime.date(1935, 1, 1), 
-        max_value=datetime.date.today(),
-        format="DD/MM/YYYY"
-    )
+    # 1. Saga-Style Text Entry
+    dob_text = st.text_input("Date of Birth", value=st.session_state.get("dob_text", ""), placeholder="DD/MM/YYYY", key="dob_text")
     
-    reg_no = st.text_input("Car Reg No", key="car_reg", placeholder="e.g. AB12 CDE") # Added key="car_reg"
+    # 2. Validation Logic
+    dob_val = None
+    if dob_text:
+        try:
+            dob_val = datetime.datetime.strptime(dob_text, "%d/%m/%Y").date()
+            st.caption("✅ Date Verified")
+        except ValueError:
+            st.error("⚠️ Use DD/MM/YYYY format")
+
+    is_homeowner = st.toggle("Are you a homeowner?", value=True, key="homeowner") 
+    reg_no = st.text_input("Car Reg No", key="car_reg", placeholder="e.g. AB12 CDE")
+    
 
 
 #Surgical Update: it automates boring stuff of calling addresses (checked Monday, 9-Mar)
@@ -269,16 +279,18 @@ def get_valid_access_token():
 code = st.query_params.get("code")
 
 
-# Handling the Callback (Surgical Update: Persistence Fix) & The "Connect" Link & Make OEMs Acceptance Automatic (checked Monday, 9-Mar)
+# Handling the Callback (Surgical Update: Persistence Fix for v.01 Saga)
 if st.button("🔌 Connect Your Real Car"):
     state = str(uuid.uuid4())
-    # Joshua's Save: Storing the full users_data into the Vault before Smartcar exit
+    # Joshua's Save: Storing the full users-data into the Vault before Smartcar exit
     vault[state] = {
         "f_name": st.session_state.get("f_name", ""),
         "s_name": st.session_state.get("s_name", ""),
+        "gender": st.session_state.get("gender", "Male"),
         "postcode": st.session_state.get("postcode", ""),
         "selected_address": st.session_state.get("selected_address", ""),
-        "dob": st.session_state.get("dob", datetime.date(1975, 1, 1)),
+        "dob_text": st.session_state.get("dob_text", ""),
+        "homeowner": st.session_state.get("homeowner", True),
         "car_reg": st.session_state.get("car_reg", ""),
         "lat": st.session_state.get("lat", 51.5074),
         "lng": st.session_state.get("lng", -0.1278),
@@ -394,3 +406,4 @@ if os.path.isfile('quotes.csv') and os.path.getsize('quotes.csv') > 0:
             st.dataframe(history_df.tail(3), use_container_width=True)
     except: 
         st.warning("Encryption key mismatch or corrupted log.")
+        
