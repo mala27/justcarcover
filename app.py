@@ -14,6 +14,7 @@ import smartcar #Heavy lifting & talking to external APIs & vehicles itself
 import io
 import uuid
 from cryptography.fernet import Fernet
+import base64
 
 
 # Our hidden storage for users details saved & associated it with the claim tickets
@@ -150,6 +151,32 @@ with col_logo:
 with col_text:
     st.title("justcarcover | Specialist Broker Portal")
     st.caption("v0.15 Smart-Price Engine | Soft UI Active")
+
+# Define the raw GitHub path
+image_url = "https://raw.githubusercontent.com/mala27/justcarcover/main/JCC-BGPix.png"
+
+def set_background(url):
+    # Fetch image and encode to Base64
+    response = requests.get(url)
+    bin_str = base64.b64encode(response.content).decode()
+    
+    # Inject CSS with the background image
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stAppViewContainer"] {{
+            background-image: url("data:image/png;base64,{bin_str}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+set_background(image_url)
+
 st.divider()
 
 
