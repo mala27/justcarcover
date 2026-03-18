@@ -409,7 +409,7 @@ if st.session_state.test_drive_active:
 
 
 # 1. Create the df FIRST (checked Monday, 13-Mar)
-            safe_dob = dob if dob else datetime.date(1975, 1, 1)
+            safe_dob = dob_val if dob_val else datetime.date(1975, 1, 1)
             df = pd.DataFrame([[f"{f_name} {s_name}", safe_dob.strftime('%d-%b-%Y'), postcode, address_field, accidents, crime_rate_val, st.session_state.mileage, final_price]], 
                                columns=['Name', 'DOB', 'Postcode', 'Address', 'Accidents', 'Crime_Rate', 'Verified_Miles', 'Premium'])
 
