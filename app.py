@@ -267,14 +267,13 @@ if "lat" in st.session_state and "lng" in st.session_state:
 
 # --- 5) REAL SMARTCAR CONNECTION (Pillar 3) --- (checked Monday, 9-Mar)
 
-
 # Tidy Priority 1: Replace hardcoded strings with st.secrets (checked Monday, 9-Mar)
 # Housekeeping: Implements Atomic Token Rotation to prevent race conditions during refresh
 client = smartcar.AuthClient(
     client_id=st.secrets["SMARTCAR_CLIENT_ID"],
     client_secret=st.secrets["SMARTCAR_CLIENT_SECRET"],
     redirect_uri=st.secrets["SMARTCAR_REDIRECT_URI"],
-    test_mode=False
+    test_mode=False     # Ensure this is False for your real car
 ) 
 
 # v0.11 - Minimized OAuth Scopes (Requesting only necessary data) (checked Monday, 9-Mar)
