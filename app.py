@@ -274,7 +274,7 @@ client = smartcar.AuthClient(
     client_id=st.secrets["SMARTCAR_CLIENT_ID"],
     client_secret=st.secrets["SMARTCAR_CLIENT_SECRET"],
     redirect_uri=st.secrets["SMARTCAR_REDIRECT_URI"],
-    test_mode=True
+    test_mode=False
 ) 
 
 # v0.11 - Minimized OAuth Scopes (Requesting only necessary data) (checked Monday, 9-Mar)
